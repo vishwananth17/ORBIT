@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Orbit",
+    "slug": "orbit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#090D16"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ai.orbit.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Orbit uses FaceID to securely protect your personal agent memory and data."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#090D16"
+      },
+      "package": "ai.orbit.app",
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Orbit to use FaceID for biometric authentication."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://10.0.2.2:4000",
+      "supabaseUrl": "https://example.supabase.co",
+      "supabaseAnonKey": "mock-anon-key"
+    }
+  }
+}

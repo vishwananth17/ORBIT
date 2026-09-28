@@ -1,0 +1,21 @@
+{
+  "name": "@kairo/database",
+  "version": "1.0.0",
+  "description": "PostgreSQL + pgvector database migrations and connection client for Kairo",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "migrate": "ts-node src/migrate.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
