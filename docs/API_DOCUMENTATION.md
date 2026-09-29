@@ -129,3 +129,78 @@ Generates a complete JSON payload containing all user memories, conversation log
 
 ### `DELETE /api/user/account`
 GDPR right-to-be-forgotten endpoint that cascades and deletes all user records from Postgres & pgvector.
+
+---
+
+## 5. Semantic Memory Vault (pgvector)
+
+### `GET /api/memories`
+List all non-archived memories for the authenticated user, optionally filtered by category.
+
+### `POST /api/memories`
+Stores a new memory fact or preference, automatically generating 1536-dimensional OpenAI vector embeddings.
+
+### `POST /api/memories/search`
+Performs cosine distance similarity search (`<=>`) with exponential recency decay.
+
+---
+
+## 6. Proactive Daily Briefs & Nudges
+
+### `GET /api/briefs/today`
+Returns today's synthesized morning brief and evening review with agenda, weather, and audio script.
+
+### `POST /api/briefs/generate`
+Forces an on-demand brief generation using Claude 3.5 Sonnet and context assembly.
+
+### `GET /api/notifications/nudges`
+Returns active proactive recommendation cards.
+
+---
+
+## 7. Voice & Quick Capture
+
+### `POST /api/voice/transcribe`
+Accepts raw audio file/base64 and returns transcribed text via Whisper API.
+
+### `POST /api/voice/synthesize`
+Generates high-fidelity MP3 base64 speech from text.
+
+### `POST /api/voice/quick-capture`
+Intelligent intent routing that classifies natural language thoughts into Tasks, Memories, or Calendar events.
+
+---
+
+## 8. Custom Personas & Agents (Phase 6)
+
+### `GET /api/agents`
+Lists user's custom personas and seeded templates (Chief of Staff, Deep Work Sentinel, Founder Advisor, Research Mentor).
+
+### `POST /api/agents`
+Creates a custom persona with isolated system prompt, tone, avatar, and tool access whitelist.
+
+### `PUT /api/agents/:id`
+Updates custom persona attributes or tool permissions.
+
+### `DELETE /api/agents/:id`
+Deletes a custom persona.
+
+### `POST /api/agents/:id/default`
+Sets a persona as the default agent for new conversations.
+
+---
+
+## 9. Daily Reflection & Insights Analytics (Phase 7)
+
+### `GET /api/journal/today`
+Retrieves today's mindful reflection log.
+
+### `POST /api/journal`
+Saves today's entry (mood 1–5, energy 1–5, productivity 1–5, tags) and generates an empathetic AI reflection.
+
+### `GET /api/journal/history`
+Returns past reflection entries (default: 14 days).
+
+### `GET /api/journal/analytics`
+Calculates multi-day averages, mood distribution histograms, top focus tags, and weekly momentum synthesis.
+
