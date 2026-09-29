@@ -3,6 +3,8 @@ import { FastifyReply } from 'fastify';
 import { config } from '../config';
 import { query } from '../db';
 import { buildSystemPrompt } from './prompt';
+import { retrieveRelevantMemories } from '../memory/retriever';
+import { extractMemoriesFromConversation } from '../memory/extractor';
 import { User, Message, StreamEvent } from '@kairo/shared';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -101,12 +103,16 @@ export async function executeChatStream(params: StreamChatParams) {
       role: row.role === 'assistant' ? 'assistant' : 'user',
       content: row.content,
     }));
-    anthropicMessages.push({ role: 'user', content });
+    // 7. Retrieve semantically relevant memories from vector vault
+    const relevantMemories = await retrieveRelevantMemories(userId, content, { limit: 6 });
 
-    // 7. Assemble system prompt
-    const systemPrompt = buildSystemPrompt({ user });
+    // 8. Assemble dynamic system prompt with recalled memories
+    const systemPrompt = buildSystemPrompt({
+      user,
+      memories: relevantMemories,
+    });
 
-    // 8. Stream execution (Claude or Fallback Simulation)
+    // 9. Stream execution (Claude or Fallback Simulation)
     const client = getAnthropicClient();
     let fullResponseText = '';
 
@@ -184,6 +190,11 @@ export async function executeChatStream(params: StreamChatParams) {
     });
 
     reply.raw.end();
+
+    // 10. Asynchronously extract facts/preferences into pgvector memory vault
+    extractMemoriesFromConversation(userId, content, fullResponseText, userMsgId).catch((memErr) => {
+      console.warn('[Memory Extraction Background Error]:', memErr.message);
+    });
   } catch (err: any) {
     console.error('[Agent Stream Error]:', err);
     sendEvent({

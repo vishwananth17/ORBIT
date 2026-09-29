@@ -19,9 +19,10 @@ import { spacing, borderRadius, typography } from '../../theme';
 
 interface ChatScreenProps {
   onOpenSettings: () => void;
+  onOpenMemoryVault: () => void;
 }
 
-export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings }) => {
+export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings, onOpenMemoryVault }) => {
   const { colors } = useTheme();
   const {
     conversations,
@@ -65,6 +66,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings }) => {
         title={conversationTitle}
         onOpenDrawer={() => setDrawerVisible(true)}
         onOpenSettings={onOpenSettings}
+        onOpenMemoryVault={onOpenMemoryVault}
         onNewChat={newChat}
       />
 

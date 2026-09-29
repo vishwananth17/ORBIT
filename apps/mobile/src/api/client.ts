@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { StreamEvent, Conversation, Message, User, NotificationSettings } from '@kairo/shared';
+import { StreamEvent, Conversation, Message, User, NotificationSettings, Memory } from '@kairo/shared';
 
 // Determine backend API URL (supports Android Emulator 10.0.2.2, iOS Simulator localhost, or Expo config)
 const getApiBaseUrl = (): string => {
@@ -78,6 +78,48 @@ export const apiClient = {
 
   async deleteConversation(conversationId: string, token?: string | null): Promise<void> {
     await this.request(`/api/conversations/${conversationId}`, {
+      method: 'DELETE',
+      token,
+    });
+  },
+
+  // Memory Vault API
+  async listMemories(category?: string, search?: string, token?: string | null): Promise<Memory[]> {
+    const params = new URLSearchParams();
+    if (category && category !== 'all') params.append('category', category);
+    if (search && search.trim()) params.append('search', search.trim());
+    const queryStr = params.toString() ? `?${params.toString()}` : '';
+    const res = await this.request<{ memories: Memory[] }>(`/api/memories${queryStr}`, { token });
+    return res.memories;
+  },
+
+  async createMemory(
+    data: { content: string; category?: string; importance_score?: number; is_pinned?: boolean },
+    token?: string | null
+  ): Promise<Memory> {
+    const res = await this.request<{ memory: Memory }>('/api/memories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      token,
+    });
+    return res.memory;
+  },
+
+  async updateMemory(
+    id: string,
+    data: { content?: string; importance_score?: number; is_pinned?: boolean; is_archived?: boolean },
+    token?: string | null
+  ): Promise<Memory> {
+    const res = await this.request<{ memory: Memory }>(`/api/memories/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+      token,
+    });
+    return res.memory;
+  },
+
+  async deleteMemory(id: string, token?: string | null): Promise<void> {
+    await this.request(`/api/memories/${id}`, {
       method: 'DELETE',
       token,
     });

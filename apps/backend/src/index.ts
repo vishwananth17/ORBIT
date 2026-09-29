@@ -7,6 +7,7 @@ import { authenticate } from './middleware/auth';
 import { chatRoutes } from './routes/chat';
 import { conversationRoutes } from './routes/conversations';
 import { userRoutes } from './routes/user';
+import { memoryRoutes } from './routes/memory';
 import { pool } from './db';
 
 const server = Fastify({
@@ -60,6 +61,7 @@ async function main() {
       await api.register(chatRoutes, { prefix: '/chat' });
       await api.register(conversationRoutes, { prefix: '/conversations' });
       await api.register(userRoutes, { prefix: '/user' });
+      await api.register(memoryRoutes, { prefix: '/memories' });
     },
     { prefix: '/api' }
   );

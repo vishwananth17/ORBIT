@@ -7,8 +7,9 @@ import { OnboardingScreen } from './src/screens/auth/OnboardingScreen';
 import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ChatScreen } from './src/screens/chat/ChatScreen';
 import { SettingsScreen } from './src/screens/settings/SettingsScreen';
+import { MemoryVaultScreen } from './src/screens/memory/MemoryVaultScreen';
 
-type AppScreen = 'chat' | 'settings';
+type AppScreen = 'chat' | 'memory' | 'settings';
 
 function MainAppNavigator() {
   const { colors, isDark } = useTheme();
@@ -49,14 +50,27 @@ function MainAppNavigator() {
   }
 
   // 3. Authenticated App Flow
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'memory':
+        return <MemoryVaultScreen onBack={() => setCurrentScreen('chat')} />;
+      case 'settings':
+        return <SettingsScreen onBack={() => setCurrentScreen('chat')} />;
+      case 'chat':
+      default:
+        return (
+          <ChatScreen
+            onOpenSettings={() => setCurrentScreen('settings')}
+            onOpenMemoryVault={() => setCurrentScreen('memory')}
+          />
+        );
+    }
+  };
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      {currentScreen === 'chat' ? (
-        <ChatScreen onOpenSettings={() => setCurrentScreen('settings')} />
-      ) : (
-        <SettingsScreen onBack={() => setCurrentScreen('chat')} />
-      )}
+      {renderScreen()}
     </>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Menu, Settings, Plus, Sparkles } from 'lucide-react-native';
+import { Menu, Settings, Plus, Sparkles, Brain } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 
@@ -8,6 +8,7 @@ interface HeaderProps {
   title?: string;
   onOpenDrawer: () => void;
   onOpenSettings: () => void;
+  onOpenMemoryVault: () => void;
   onNewChat: () => void;
 }
 
@@ -15,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   title = 'Orbit',
   onOpenDrawer,
   onOpenSettings,
+  onOpenMemoryVault,
   onNewChat,
 }) => {
   const { colors } = useTheme();
@@ -41,6 +43,14 @@ export const Header: React.FC<HeaderProps> = ({
       </View>
 
       <View style={styles.rightRow}>
+        <TouchableOpacity
+          onPress={onOpenMemoryVault}
+          style={[styles.iconButton, { backgroundColor: colors.surface }]}
+          accessibilityLabel="Open Memory Vault"
+        >
+          <Brain size={18} color={colors.accent} />
+        </TouchableOpacity>
+
         <TouchableOpacity
           onPress={onNewChat}
           style={[styles.iconButton, { backgroundColor: colors.surface }]}
