@@ -101,6 +101,29 @@ export async function executeChatStream(params: StreamChatParams) {
       [convId, userMsgId]
     );
 
+    // Look up custom agent if assigned to conversation or passed directly
+    let effectiveAgentId = customAgentId;
+    if (!effectiveAgentId && convId) {
+      const convRow = await query<{ custom_agent_id: string | null }>(
+        'SELECT custom_agent_id FROM conversations WHERE id = $1',
+        [convId]
+      );
+      if (convRow.rows[0]?.custom_agent_id) {
+        effectiveAgentId = convRow.rows[0].custom_agent_id;
+      }
+    }
+
+    let customAgent: any = null;
+    if (effectiveAgentId) {
+      const agentRes = await query(
+        'SELECT * FROM custom_agents WHERE id = $1 AND user_id = $2',
+        [effectiveAgentId, userId]
+      );
+      if (agentRes.rows.length > 0) {
+        customAgent = agentRes.rows[0];
+      }
+    }
+
     const anthropicMessages: Array<{ role: 'user' | 'assistant'; content: string }> = historyRes.rows.map((row) => ({
       role: row.role === 'assistant' ? 'assistant' : 'user',
       content: row.content,
@@ -108,15 +131,24 @@ export async function executeChatStream(params: StreamChatParams) {
     // 7. Retrieve semantically relevant memories from vector vault
     const relevantMemories = await retrieveRelevantMemories(userId, content, { limit: 6 });
 
-    // 8. Assemble dynamic system prompt with recalled memories
+    // 8. Assemble dynamic system prompt with recalled memories and persona
     const systemPrompt = buildSystemPrompt({
       user,
       memories: relevantMemories,
+      agentName: customAgent?.name || 'Orbit',
+      tone: customAgent?.tone,
+      customSystemPrompt: customAgent?.system_prompt,
     });
 
     // 9. Stream execution (Claude or Fallback Simulation)
     const client = getAnthropicClient();
     let fullResponseText = '';
+
+    // Filter tools if custom agent has enabled_tools whitelist
+    let availableTools = getAnthropicToolDefinitions();
+    if (customAgent?.enabled_tools && Array.isArray(customAgent.enabled_tools) && customAgent.enabled_tools.length > 0) {
+      availableTools = availableTools.filter((t) => customAgent.enabled_tools.includes(t.name));
+    }
 
     if (client) {
       const stream = client.messages.stream({
@@ -124,7 +156,7 @@ export async function executeChatStream(params: StreamChatParams) {
         max_tokens: 2048,
         system: systemPrompt,
         messages: anthropicMessages,
-        tools: getAnthropicToolDefinitions(),
+        tools: availableTools,
       });
 
       for await (const chunk of stream) {

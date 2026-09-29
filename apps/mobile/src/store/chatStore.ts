@@ -3,6 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { Conversation, Message } from '@orbit/shared';
 import { apiClient } from '../api/client';
 import { useAuthStore } from './authStore';
+import { useAgentStore } from './agentStore';
 import { ActionConfirmationItem } from '../components/chat/ToolConfirmationCard';
 
 interface ChatState {
@@ -116,9 +117,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
     let currentConvId = activeConversationId;
     let accumulatedText = '';
 
+    const activeAgent = useAgentStore.getState().activeAgent;
+
     await apiClient.streamChat({
       content: trimmed,
       conversationId: currentConvId || undefined,
+      customAgentId: activeAgent?.id || undefined,
       authToken: token,
       signal: abortController.signal,
       onEvent: (event) => {

@@ -52,6 +52,37 @@ export const UpdateMemorySchema = z.object({
   is_archived: z.boolean().optional(),
 });
 
+export const CreateCustomAgentSchema = z.object({
+  name: z.string().min(1, 'Agent name is required').max(60),
+  tagline: z.string().max(120).optional().nullable(),
+  system_prompt: z.string().min(10, 'System prompt must be at least 10 characters').max(5000),
+  tone: z.string().max(100).optional().default('concise, thoughtful, proactive'),
+  avatar_icon: z.string().max(50).optional().default('bot'),
+  enabled_tools: z.array(z.string()).optional().default(['calendar_read', 'tasks_manage', 'memory_search']),
+  is_default: z.boolean().optional().default(false),
+});
+
+export const UpdateCustomAgentSchema = z.object({
+  name: z.string().min(1).max(60).optional(),
+  tagline: z.string().max(120).optional().nullable(),
+  system_prompt: z.string().min(10).max(5000).optional(),
+  tone: z.string().max(100).optional(),
+  avatar_icon: z.string().max(50).optional(),
+  enabled_tools: z.array(z.string()).optional(),
+  is_default: z.boolean().optional(),
+});
+
+export const CreateJournalEntrySchema = z.object({
+  entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format YYYY-MM-DD').optional(),
+  summary: z.string().min(3, 'Summary must be at least 3 characters').max(4000),
+  key_takeaways: z.array(z.string()).optional().default([]),
+  mood_score: z.number().int().min(1).max(5).optional().default(3),
+  mood_tags: z.array(z.string()).optional().default([]),
+  energy_level: z.number().int().min(1).max(5).optional().default(3),
+  productivity_score: z.number().int().min(1).max(5).optional().default(3),
+  request_ai_reflection: z.boolean().optional().default(true),
+});
+
 export type CreateConversationInput = z.infer<typeof CreateConversationSchema>;
 export type UpdateConversationInput = z.infer<typeof UpdateConversationSchema>;
 export type SendMessageInput = z.infer<typeof SendMessageSchema>;
@@ -59,3 +90,7 @@ export type UpdateSettingsInput = z.infer<typeof UpdateSettingsSchema>;
 export type ConfirmActionInput = z.infer<typeof ConfirmActionSchema>;
 export type CreateMemoryInput = z.infer<typeof CreateMemorySchema>;
 export type UpdateMemoryInput = z.infer<typeof UpdateMemorySchema>;
+export type CreateCustomAgentInputSchema = z.infer<typeof CreateCustomAgentSchema>;
+export type UpdateCustomAgentInputSchema = z.infer<typeof UpdateCustomAgentSchema>;
+export type CreateJournalEntryInputSchema = z.infer<typeof CreateJournalEntrySchema>;
+

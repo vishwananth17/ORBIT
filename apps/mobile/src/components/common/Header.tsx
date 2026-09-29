@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Menu, Settings, Plus, Sparkles, Brain, Sun } from 'lucide-react-native';
+import { Menu, Settings, Plus, Sparkles, Brain, Sun, Bot, BookOpen } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
+import { useAgentStore } from '../../store/agentStore';
 import { spacing, borderRadius, typography } from '../../theme';
 
 interface HeaderProps {
@@ -10,6 +11,8 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onOpenMemoryVault: () => void;
   onOpenToday?: () => void;
+  onOpenAgents?: () => void;
+  onOpenJournal?: () => void;
   onNewChat: () => void;
 }
 
@@ -19,9 +22,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onOpenMemoryVault,
   onOpenToday,
+  onOpenAgents,
+  onOpenJournal,
   onNewChat,
 }) => {
   const { colors } = useTheme();
+  const { activeAgent } = useAgentStore();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, borderBottomColor: colors.borderSubtle }]}>
@@ -41,10 +47,25 @@ export const Header: React.FC<HeaderProps> = ({
               {title}
             </Text>
           </View>
+          {activeAgent && (
+            <Text style={[styles.agentSubText, { color: colors.textSecondary }]} numberOfLines={1}>
+              {activeAgent.name}
+            </Text>
+          )}
         </View>
       </View>
 
       <View style={styles.rightRow}>
+        {onOpenAgents && (
+          <TouchableOpacity
+            onPress={onOpenAgents}
+            style={[styles.iconButton, { backgroundColor: colors.surface }]}
+            accessibilityLabel="Switch Personas & Custom Agents"
+          >
+            <Bot size={18} color={colors.accent} />
+          </TouchableOpacity>
+        )}
+
         {onOpenToday && (
           <TouchableOpacity
             onPress={onOpenToday}
@@ -121,5 +142,10 @@ const styles = StyleSheet.create({
   brandText: {
     ...typography.subheading,
     fontWeight: '700',
+  },
+  agentSubText: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 1,
   },
 });

@@ -22,6 +22,8 @@ import {
   Trash2,
   Shield,
   Link2,
+  Bot,
+  BookOpen,
 } from 'lucide-react-native';
 import { useAuthStore } from '../../store/authStore';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -33,12 +35,16 @@ interface SettingsScreenProps {
   onBack: () => void;
   onOpenIntegrations: () => void;
   onOpenNotifications: () => void;
+  onOpenAgents?: () => void;
+  onOpenJournal?: () => void;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onBack,
   onOpenIntegrations,
   onOpenNotifications,
+  onOpenAgents,
+  onOpenJournal,
 }) => {
   const { colors, mode, setMode } = useTheme();
   const { user, logout, token } = useAuthStore();
@@ -214,6 +220,48 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <Text style={[styles.badgeValue, { color: colors.accent }]}>Configure →</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Section: Personas & Custom Agents (Phase 6) */}
+        {onOpenAgents && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.textTertiary }]}>PERSONAS & AGENTS</Text>
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
+              <TouchableOpacity onPress={onOpenAgents} style={styles.rowItem}>
+                <View style={styles.rowLabelGroup}>
+                  <Bot size={18} color={colors.accent} />
+                  <View>
+                    <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Custom Personas & Agents</Text>
+                    <Text style={[styles.rowDescription, { color: colors.textSecondary }]}>
+                      Chief of Staff, Deep Work Sentinel, Research Mentor & custom prompts
+                    </Text>
+                  </View>
+                </View>
+                <Text style={[styles.badgeValue, { color: colors.accent }]}>Manage →</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        {/* Section: Daily Reflection & Insights (Phase 7) */}
+        {onOpenJournal && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.textTertiary }]}>DAILY REFLECTION & INSIGHTS</Text>
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
+              <TouchableOpacity onPress={onOpenJournal} style={styles.rowItem}>
+                <View style={styles.rowLabelGroup}>
+                  <BookOpen size={18} color="#8B5CF6" />
+                  <View>
+                    <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Mindful Reflection & Mood</Text>
+                    <Text style={[styles.rowDescription, { color: colors.textSecondary }]}>
+                      Daily pause log, mood & energy trends, and weekly AI synthesis
+                    </Text>
+                  </View>
+                </View>
+                <Text style={[styles.badgeValue, { color: colors.accent }]}>View →</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         {/* Section: Connected Tools */}
         <Text style={[styles.sectionTitle, { color: colors.textTertiary }]}>EXTERNAL TOOLS</Text>

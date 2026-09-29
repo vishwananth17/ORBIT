@@ -22,6 +22,7 @@ interface ChatScreenProps {
   onOpenSettings: () => void;
   onOpenMemoryVault: () => void;
   onOpenToday: () => void;
+  onOpenAgents?: () => void;
   initialPrompt?: string | null;
 }
 
@@ -29,6 +30,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   onOpenSettings,
   onOpenMemoryVault,
   onOpenToday,
+  onOpenAgents,
   initialPrompt,
 }) => {
   const { colors } = useTheme();
@@ -84,6 +86,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         onOpenSettings={onOpenSettings}
         onOpenMemoryVault={onOpenMemoryVault}
         onOpenToday={onOpenToday}
+        onOpenAgents={onOpenAgents}
         onNewChat={newChat}
       />
 

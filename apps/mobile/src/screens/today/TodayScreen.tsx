@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Settings, MessageSquare, Sparkles, Moon, Sun, Mic } from 'lucide-react-native';
+import { Settings, MessageSquare, Sparkles, Moon, Sun, Mic, Bot, BookOpen } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuthStore } from '../../store/authStore';
 import { useTodayStore } from '../../store/todayStore';
@@ -27,9 +27,11 @@ import { SuggestedAction } from '@orbit/shared';
 interface TodayScreenProps {
   onOpenChat: (initialPrompt?: string) => void;
   onOpenSettings: () => void;
+  onOpenJournal?: () => void;
+  onOpenAgents?: () => void;
 }
 
-export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
+export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenAgents }: TodayScreenProps) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
   const { user } = useAuthStore();
@@ -115,6 +117,28 @@ export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
             <Mic size={18} color={colors.accent} />
           </TouchableOpacity>
 
+          {onOpenJournal && (
+            <TouchableOpacity
+              onPress={onOpenJournal}
+              style={[styles.headerIconBtn, { backgroundColor: colors.surface }]}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Daily Reflection & Mood"
+            >
+              <BookOpen size={18} color="#8B5CF6" />
+            </TouchableOpacity>
+          )}
+
+          {onOpenAgents && (
+            <TouchableOpacity
+              onPress={onOpenAgents}
+              style={[styles.headerIconBtn, { backgroundColor: colors.surface }]}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Personas & Custom Agents"
+            >
+              <Bot size={18} color={colors.accent} />
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             onPress={() => onOpenChat()}
             style={[styles.headerIconBtn, { backgroundColor: colors.surface }]}
@@ -196,7 +220,37 @@ export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
               </>
             )}
 
-            {/* 4. Quick Contextual Conversation Starter Bar */}
+            {/* 4. Mindful Evening Reflection & Mood Banner */}
+            {onOpenJournal && (
+              <TouchableOpacity
+                onPress={onOpenJournal}
+                activeOpacity={0.85}
+                style={[
+                  styles.journalCard,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: '#8B5CF6' + '40',
+                  },
+                ]}
+              >
+                <View style={styles.journalHeaderRow}>
+                  <View style={styles.journalIconBadge}>
+                    <Text style={{ fontSize: 20 }}>🌙</Text>
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={[styles.journalCardTitle, { color: colors.textPrimary }]}>
+                      Daily Reflection & Mood Tracker
+                    </Text>
+                    <Text style={[styles.journalCardSub, { color: colors.textSecondary }]}>
+                      Log today's cognitive pause, energy & receive AI reflection
+                    </Text>
+                  </View>
+                  <Text style={[styles.journalArrow, { color: '#8B5CF6' }]}>→</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+
+            {/* 5. Quick Contextual Conversation Starter Bar */}
             <TouchableOpacity
               onPress={() => onOpenChat()}
               activeOpacity={0.8}
@@ -307,5 +361,36 @@ const styles = StyleSheet.create({
   },
   quickChatText: {
     fontSize: 14,
+  },
+  journalCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    marginTop: 18,
+  },
+  journalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  journalIconBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#8B5CF620',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  journalCardTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  journalCardSub: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  journalArrow: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 8,
   },
 });

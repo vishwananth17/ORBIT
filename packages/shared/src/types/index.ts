@@ -295,4 +295,91 @@ export interface VoiceSynthesisResult {
   format: 'mp3';
 }
 
+// ============================================================================
+// Phase 6: Custom Agents & Personas Types
+// ============================================================================
+
+export interface CustomAgent {
+  id: string;
+  user_id: string;
+  name: string;
+  tagline?: string | null;
+  system_prompt: string;
+  tone: string;
+  avatar_icon: string;
+  enabled_tools: string[];
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCustomAgentInput {
+  name: string;
+  tagline?: string;
+  system_prompt: string;
+  tone?: string;
+  avatar_icon?: string;
+  enabled_tools?: string[];
+  is_default?: boolean;
+}
+
+export interface UpdateCustomAgentInput {
+  name?: string;
+  tagline?: string;
+  system_prompt?: string;
+  tone?: string;
+  avatar_icon?: string;
+  enabled_tools?: string[];
+  is_default?: boolean;
+}
+
+// ============================================================================
+// Phase 7: Reflection & Insights Analytics Types
+// ============================================================================
+
+export interface JournalEntry {
+  id: string;
+  user_id: string;
+  entry_date: string;
+  summary: string;
+  key_takeaways: string[];
+  mood_score: number;
+  mood_tags: string[];
+  energy_level: number;
+  productivity_score: number;
+  ai_reflection?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateJournalEntryInput {
+  entry_date?: string;
+  summary: string;
+  key_takeaways?: string[];
+  mood_score?: number;
+  mood_tags?: string[];
+  energy_level?: number;
+  productivity_score?: number;
+  request_ai_reflection?: boolean;
+}
+
+export interface JournalAnalytics {
+  period_days: number;
+  average_mood: number;
+  average_energy: number;
+  average_productivity: number;
+  mood_distribution: Record<number, number>;
+  top_tags: { tag: string; count: number }[];
+  entries_count: number;
+  ai_synthesis: string;
+  daily_scores: {
+    date: string;
+    mood: number;
+    energy: number;
+    productivity: number;
+  }[];
+}
+
+
+
 

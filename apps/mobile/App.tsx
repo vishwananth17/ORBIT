@@ -11,8 +11,12 @@ import { MemoryVaultScreen } from './src/screens/memory/MemoryVaultScreen';
 import { IntegrationsScreen } from './src/screens/integrations/IntegrationsScreen';
 import { TodayScreen } from './src/screens/today/TodayScreen';
 import { NotificationSettingsScreen } from './src/screens/settings/NotificationSettingsScreen';
+import { CustomAgentsScreen } from './src/screens/agents/CustomAgentsScreen';
+import { JournalScreen } from './src/screens/journal/JournalScreen';
+import { OfflineSyncBanner } from './src/components/common/OfflineSyncBanner';
+import { offlineSyncService } from './src/services/offlineSyncService';
 
-type AppScreen = 'today' | 'chat' | 'memory' | 'settings' | 'integrations' | 'notifications';
+type AppScreen = 'today' | 'chat' | 'memory' | 'settings' | 'integrations' | 'notifications' | 'agents' | 'journal';
 
 function MainAppNavigator() {
   const { colors, isDark } = useTheme();
@@ -23,6 +27,7 @@ function MainAppNavigator() {
 
   useEffect(() => {
     initialize();
+    offlineSyncService.initialize();
   }, []);
 
   if (isLoading) {
@@ -64,6 +69,8 @@ function MainAppNavigator() {
               setCurrentScreen('chat');
             }}
             onOpenSettings={() => setCurrentScreen('settings')}
+            onOpenJournal={() => setCurrentScreen('journal')}
+            onOpenAgents={() => setCurrentScreen('agents')}
           />
         );
       case 'notifications':
@@ -72,12 +79,31 @@ function MainAppNavigator() {
         return <MemoryVaultScreen onBack={() => setCurrentScreen('chat')} />;
       case 'integrations':
         return <IntegrationsScreen onBack={() => setCurrentScreen('settings')} />;
+      case 'agents':
+        return (
+          <CustomAgentsScreen
+            onBack={() => setCurrentScreen('chat')}
+            onSelectAgentForChat={() => setCurrentScreen('chat')}
+          />
+        );
+      case 'journal':
+        return (
+          <JournalScreen
+            onBack={() => setCurrentScreen('today')}
+            onOpenChatWithReflection={(reflectionText) => {
+              setInitialChatPrompt(`Let's discuss my daily reflection: "${reflectionText}"`);
+              setCurrentScreen('chat');
+            }}
+          />
+        );
       case 'settings':
         return (
           <SettingsScreen
             onBack={() => setCurrentScreen('chat')}
             onOpenIntegrations={() => setCurrentScreen('integrations')}
             onOpenNotifications={() => setCurrentScreen('notifications')}
+            onOpenAgents={() => setCurrentScreen('agents')}
+            onOpenJournal={() => setCurrentScreen('journal')}
           />
         );
       case 'chat':
@@ -87,6 +113,7 @@ function MainAppNavigator() {
             onOpenSettings={() => setCurrentScreen('settings')}
             onOpenMemoryVault={() => setCurrentScreen('memory')}
             onOpenToday={() => setCurrentScreen('today')}
+            onOpenAgents={() => setCurrentScreen('agents')}
             initialPrompt={initialChatPrompt}
           />
         );
@@ -96,6 +123,7 @@ function MainAppNavigator() {
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <OfflineSyncBanner />
       {renderScreen()}
     </>
   );

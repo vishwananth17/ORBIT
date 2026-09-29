@@ -15,6 +15,8 @@ import multipart from '@fastify/multipart';
 import { briefsRoutes } from './routes/briefs';
 import { notificationsRoutes } from './routes/notifications';
 import { voiceRoutes } from './routes/voice';
+import { agentsRoutes } from './routes/agents';
+import { journalRoutes } from './routes/journal';
 import { startProactiveScheduler, stopProactiveScheduler } from './proactivity/scheduler';
 import { pool } from './db';
 
@@ -82,6 +84,8 @@ async function main() {
       await api.register(briefsRoutes, { prefix: '/briefs' });
       await api.register(notificationsRoutes, { prefix: '/notifications' });
       await api.register(voiceRoutes, { prefix: '/voice' });
+      await api.register(agentsRoutes, { prefix: '/agents' });
+      await api.register(journalRoutes, { prefix: '/journal' });
     },
     { prefix: '/api' }
   );

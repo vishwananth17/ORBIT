@@ -13,6 +13,12 @@ import {
   QuickCaptureResult,
   VoiceTranscriptionResult,
   VoiceSynthesisResult,
+  CustomAgent,
+  CreateCustomAgentInput,
+  UpdateCustomAgentInput,
+  JournalEntry,
+  CreateJournalEntryInput,
+  JournalAnalytics,
 } from '@orbit/shared';
 
 // Determine backend API URL (supports Android Emulator 10.0.2.2, iOS Simulator localhost, or Expo config)
@@ -251,6 +257,62 @@ export const apiClient = {
       body: JSON.stringify({ input, audio_base64: audioBase64 }),
       token,
     });
+  },
+
+  // Custom Agents & Personas (Phase 6)
+  async getAgents(token?: string | null): Promise<{ agents: CustomAgent[]; presets: any[] }> {
+    return this.request<{ agents: CustomAgent[]; presets: any[] }>('/api/agents', { token });
+  },
+
+  async createAgent(input: CreateCustomAgentInput, token?: string | null): Promise<{ agent: CustomAgent }> {
+    return this.request<{ agent: CustomAgent }>('/api/agents', {
+      method: 'POST',
+      body: JSON.stringify(input),
+      token,
+    });
+  },
+
+  async updateAgent(id: string, input: UpdateCustomAgentInput, token?: string | null): Promise<{ agent: CustomAgent }> {
+    return this.request<{ agent: CustomAgent }>(`/api/agents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(input),
+      token,
+    });
+  },
+
+  async deleteAgent(id: string, token?: string | null): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/api/agents/${id}`, {
+      method: 'DELETE',
+      token,
+    });
+  },
+
+  async setDefaultAgent(id: string, token?: string | null): Promise<{ success: boolean; agent: CustomAgent }> {
+    return this.request<{ success: boolean; agent: CustomAgent }>(`/api/agents/${id}/default`, {
+      method: 'POST',
+      token,
+    });
+  },
+
+  // Daily Journal & Insights Analytics (Phase 7)
+  async getTodayJournal(token?: string | null): Promise<{ entry: JournalEntry | null }> {
+    return this.request<{ entry: JournalEntry | null }>('/api/journal/today', { token });
+  },
+
+  async saveJournal(input: CreateJournalEntryInput, token?: string | null): Promise<{ entry: JournalEntry }> {
+    return this.request<{ entry: JournalEntry }>('/api/journal', {
+      method: 'POST',
+      body: JSON.stringify(input),
+      token,
+    });
+  },
+
+  async getJournalHistory(limit = 14, token?: string | null): Promise<{ entries: JournalEntry[] }> {
+    return this.request<{ entries: JournalEntry[] }>(`/api/journal/history?limit=${limit}`, { token });
+  },
+
+  async getJournalAnalytics(days = 7, token?: string | null): Promise<{ analytics: JournalAnalytics }> {
+    return this.request<{ analytics: JournalAnalytics }>(`/api/journal/analytics?days=${days}`, { token });
   },
 
 
