@@ -18,7 +18,7 @@ const config: PoolConfig = {
   connectionTimeoutMillis: 2000, // Fast 2s timeout for seamless local fallback
 };
 
-export const pool = new Pool(config);
+export const rawPool = new Pool(config);
 
 let isPostgresAvailable = false;
 let hasCheckedPostgres = false;
@@ -29,7 +29,7 @@ async function checkPostgresConnectivity(): Promise<boolean> {
   hasCheckedPostgres = true;
 
   try {
-    const client = await pool.connect();
+    const client = await rawPool.connect();
     await client.query('SELECT 1');
     client.release();
     isPostgresAvailable = true;
@@ -46,7 +46,7 @@ async function checkPostgresConnectivity(): Promise<boolean> {
 // Initial probe
 checkPostgresConnectivity();
 
-pool.on('error', (err) => {
+rawPool.on('error', (err) => {
   if (isPostgresAvailable) {
     console.warn('[Orbit Database Pool Error]:', err.message);
   }
@@ -63,7 +63,7 @@ export async function query<T extends QueryResultRow = any>(
   if (isPostgresAvailable) {
     try {
       const start = Date.now();
-      const res = await pool.query<T>(text, params);
+      const res = await rawPool.query<T>(text, params);
       const duration = Date.now() - start;
       if (process.env.NODE_ENV === 'development' && duration > 200) {
         console.warn(`[Slow Query] ${duration}ms: ${text.slice(0, 100)}...`);
@@ -89,14 +89,26 @@ export async function getClient() {
   }
 
   if (isPostgresAvailable) {
-    return await pool.connect();
+    try {
+      return await rawPool.connect();
+    } catch {
+      isPostgresAvailable = false;
+    }
   }
 
   // Mock pool client for transactions
   return {
-    query: (text: string, params?: any[]) => memoryDb.execute(text, params),
+    query: <T extends QueryResultRow = any>(text: string, params?: any[]) => memoryDb.execute<T>(text, params),
     release: () => {},
   };
 }
+
+// Universal Pool proxy ensuring pool.query() routes through query() fallback
+export const pool = {
+  query: <T extends QueryResultRow = any>(text: string, params?: any[]) => query<T>(text, params),
+  connect: () => getClient(),
+  end: () => rawPool.end().catch(() => {}),
+  on: (event: any, handler: any) => (rawPool as any).on(event, handler),
+} as unknown as Pool;
 
 export { memoryDb };

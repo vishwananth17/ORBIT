@@ -209,26 +209,23 @@ function createInitialStore(): InMemoryStore {
       {
         id: 'brief-today',
         user_id: DEMO_USER_ID,
-        brief_type: 'morning_brief',
-        brief_date: today,
-        audio_script: 'Good morning Vishw. Today is Tuesday, September 29th. You have 3 key priorities today: finalizing the Orbit demo walkthrough, reviewing calendar OAuth tokens, and safeguarding your morning deep work block.',
+        type: 'morning_brief',
+        date: today,
+        title: 'Morning Brief: Focus on Core Priorities',
+        summary: 'Good morning Vishw. Today is Tuesday, September 29th. You have 3 key priorities today: finalizing the Orbit demo walkthrough, reviewing calendar OAuth tokens, and safeguarding your morning deep work block.',
+        audio_summary: 'Good morning Vishw. Today is Tuesday, September 29th. You have 3 key priorities today: finalizing the Orbit demo walkthrough, reviewing calendar OAuth tokens, and safeguarding your morning deep work block.',
         agenda_items: [
           { time: '09:00 AM', title: 'Deep Work Block: Demo Video & Polish', type: 'focus' },
           { time: '02:00 PM', title: 'Team Sync & Product Review', type: 'meeting' },
           { time: '05:00 PM', title: 'Architecture Review & GitHub Push', type: 'task' },
         ],
-        key_priorities: [
-          'Finalize Orbit End-to-End Demo Video',
-          'Review Google Calendar & Drive OAuth Scopes',
-          'Test Morning Brief push notification delivery',
-        ],
-        weather_summary: { condition: 'Clear Skies', temp_f: 74, summary: '74°F and clear in Bangalore. Perfect conditions for focus.' },
         suggested_actions: [
           { id: 'nudge-1', title: 'Schedule Standup Reminder', action_type: 'reminder', description: 'Meeting in 45m: Team Sync' },
           { id: 'nudge-2', title: 'Review Unfinished Tasks', action_type: 'task_review', description: '1 high-priority task due tomorrow' },
         ],
-        is_read: false,
+        read_at: null,
         created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       },
     ],
     proactive_nudges: [
@@ -340,31 +337,47 @@ export class MemoryDb {
       updated_at: new Date().toISOString(),
     };
 
-    // Extract column names from INSERT INTO table (col1, col2, ...)
-    const colsMatch = sql.match(/\(([^)]+)\)\s+VALUES/i);
-    if (colsMatch && colsMatch[1]) {
-      const cols = colsMatch[1].split(',').map((c) => c.trim().toLowerCase());
+    // Extract column names and values expressions from INSERT INTO table (col1, ...) VALUES (val1, ...)
+    const insertMatch = sql.match(/\(([^)]+)\)\s+VALUES\s*\(([^)]+)\)/i);
+    if (insertMatch && insertMatch[1] && insertMatch[2]) {
+      const cols = insertMatch[1].split(',').map((c) => c.trim().toLowerCase());
+      const valExprs = insertMatch[2].split(',').map((v) => v.trim());
+
       cols.forEach((col, idx) => {
-        if (params && idx < params.length) {
-          let val = params[idx];
-          // Handle parsed JSON parameters
-          if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
-            try {
-              val = JSON.parse(val);
-            } catch {
-              // keep as string
-            }
+        const expr = valExprs[idx];
+        if (!expr) return;
+
+        let val: any = undefined;
+        if (expr.startsWith('$')) {
+          const paramIdx = parseInt(expr.slice(1), 10) - 1;
+          if (params && paramIdx < params.length) {
+            val = params[paramIdx];
           }
+        } else if ((expr.startsWith("'") && expr.endsWith("'")) || (expr.startsWith('"') && expr.endsWith('"'))) {
+          val = expr.slice(1, -1);
+        } else if (expr.toUpperCase() === 'NOW()') {
+          val = new Date().toISOString();
+        } else if (expr.toUpperCase() === 'TRUE') {
+          val = true;
+        } else if (expr.toUpperCase() === 'FALSE') {
+          val = false;
+        } else if (!isNaN(Number(expr))) {
+          val = Number(expr);
+        }
+
+        // Handle parsed JSON parameters
+        if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+          try {
+            val = JSON.parse(val);
+          } catch {
+            // keep as string
+          }
+        }
+
+        if (val !== undefined) {
           newRecord[col] = val;
         }
       });
-    }
-
-    // Ensure ID from params if passed
-    if (params && params.length > 0 && typeof params[0] === 'string' && params[0].includes('-')) {
-      if (!newRecord.id || newRecord.id.startsWith('mock-')) {
-        newRecord.id = params[0];
-      }
     }
 
     // Upsert behavior on unique key if exists
@@ -373,7 +386,7 @@ export class MemoryDb {
       if (table === 'users' && item.email && newRecord.email && item.email === newRecord.email) return true;
       if (table === 'notification_settings' && item.user_id && newRecord.user_id && item.user_id === newRecord.user_id) return true;
       if (table === 'journal_entries' && item.user_id === newRecord.user_id && item.entry_date === newRecord.entry_date) return true;
-      if (table === 'daily_briefs' && item.user_id === newRecord.user_id && item.brief_type === newRecord.brief_type && item.brief_date === newRecord.brief_date) return true;
+      if (table === 'daily_briefs' && item.user_id === newRecord.user_id && item.type === newRecord.type && item.date === newRecord.date) return true;
       return false;
     });
 
@@ -393,26 +406,43 @@ export class MemoryDb {
     let filtered = [...data];
 
     // Filter by user_id
-    if (params && params.length > 0) {
-      const userIdParam = params.find((p) => typeof p === 'string' && p.length >= 10);
-      if (userIdParam && sql.includes('user_id = $')) {
-        filtered = filtered.filter((item) => !item.user_id || item.user_id === userIdParam);
-      }
+    const userMatch = sql.match(/user_id\s*=\s*\$(\d+)/i);
+    if (userMatch) {
+      const idx = parseInt(userMatch[1], 10) - 1;
+      const targetUser = params[idx];
+      filtered = filtered.filter((item) => !item.user_id || item.user_id === targetUser);
     }
 
     // Filter by id
-    if (sql.includes('WHERE id = $') && params.length > 0) {
-      filtered = filtered.filter((item) => item.id === params[0]);
+    const idMatch = sql.match(/\bid\s*=\s*\$(\d+)/i);
+    if (idMatch) {
+      const idx = parseInt(idMatch[1], 10) - 1;
+      const targetId = params[idx];
+      filtered = filtered.filter((item) => item.id === targetId);
     }
 
     // Filter by conversation_id
-    if (sql.includes('conversation_id = $') && params.length > 0) {
-      filtered = filtered.filter((item) => item.conversation_id === params[0]);
+    const convMatch = sql.match(/conversation_id\s*=\s*\$(\d+)/i);
+    if (convMatch) {
+      const idx = parseInt(convMatch[1], 10) - 1;
+      const targetConv = params[idx];
+      filtered = filtered.filter((item) => item.conversation_id === targetConv);
+    }
+
+    // Filter by date
+    const dateMatch = sql.match(/\bdate\s*=\s*\$(\d+)/i);
+    if (dateMatch) {
+      const idx = parseInt(dateMatch[1], 10) - 1;
+      const targetDate = params[idx];
+      filtered = filtered.filter((item) => item.date === targetDate);
     }
 
     // Filter by entry_date
-    if (sql.includes('entry_date = $') && params.length > 1) {
-      filtered = filtered.filter((item) => item.entry_date === params[1]);
+    const entryDateMatch = sql.match(/entry_date\s*=\s*\$(\d+)/i);
+    if (entryDateMatch) {
+      const idx = parseInt(entryDateMatch[1], 10) - 1;
+      const targetEntryDate = params[idx];
+      filtered = filtered.filter((item) => item.entry_date === targetEntryDate);
     }
 
     // Order by created_at / entry_date
@@ -443,7 +473,8 @@ export class MemoryDb {
 
     let updatedRows: any[] = [];
     if (params && params.length > 0) {
-      const idParam = params[params.length - 1]; // usually WHERE id = $N
+      const idMatch = sql.match(/\bid\s*=\s*\$(\d+)/i);
+      const idParam = idMatch ? params[parseInt(idMatch[1], 10) - 1] : params[params.length - 1];
       data.forEach((item) => {
         if (item.id === idParam || item.user_id === idParam) {
           if (sql.includes('is_default = TRUE')) {
@@ -451,6 +482,19 @@ export class MemoryDb {
           }
           if (sql.includes('is_default = FALSE')) {
             item.is_default = false;
+          }
+          if (sql.includes("confirmation_status = 'approved'")) {
+            item.confirmation_status = 'approved';
+          }
+          if (sql.includes("confirmation_status = 'rejected'")) {
+            item.confirmation_status = 'rejected';
+          }
+          if (sql.includes('read_at = NOW()')) {
+            item.read_at = new Date().toISOString();
+          }
+          if (sql.includes("status = 'completed'")) {
+            item.status = 'completed';
+            item.completed_at = new Date().toISOString();
           }
           item.updated_at = new Date().toISOString();
           updatedRows.push(item);

@@ -23,16 +23,6 @@ import { pool } from './db';
 const server = Fastify({
   logger: {
     level: config.LOG_LEVEL,
-    transport:
-      config.NODE_ENV === 'development'
-        ? {
-            target: 'pino-pretty',
-            options: {
-              translateTime: 'HH:MM:ss Z',
-              ignore: 'pid,hostname',
-            },
-          }
-        : undefined,
   },
 });
 
