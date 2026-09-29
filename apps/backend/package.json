@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "tsx test/agent.test.ts"
+    "test": "tsx test/run_all.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.1",
