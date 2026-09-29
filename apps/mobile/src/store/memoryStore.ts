@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import * as Haptics from 'expo-haptics';
-import { Memory, MemoryCategory } from '@kairo/shared';
+import { Memory, MemoryCategory } from '@orbit/shared';
 import { apiClient } from '../api/client';
 import { useAuthStore } from './authStore';
 

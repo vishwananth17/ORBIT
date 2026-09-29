@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db';
-import { ActionLog, TOOL_NAMES, Task } from '@kairo/shared';
+import { ActionLog, TOOL_NAMES, Task } from '@orbit/shared';
 import { doesToolRequireConfirmation, TOOL_REGISTRY } from './registry';
 
 export interface ToolExecutionResponse {

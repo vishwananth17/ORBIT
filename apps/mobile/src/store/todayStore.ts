@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { create } from 'zustand';
-import { DailyBrief, ProactiveNudge, NotificationSettings, NotificationSettingsUpdate, BriefType } from '@kairo/shared';
+import { DailyBrief, ProactiveNudge, NotificationSettings, NotificationSettingsUpdate, BriefType } from '@orbit/shared';
 import { apiClient } from '../api/client';
 
 interface TodayState {

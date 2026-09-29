@@ -1,5 +1,5 @@
 import { query } from '../db';
-import { Memory, MemoryCategory } from '@kairo/shared';
+import { Memory, MemoryCategory } from '@orbit/shared';
 import { generateEmbedding, formatVectorForPg } from './embeddings';
 
 export interface RetrievedMemory extends Memory {

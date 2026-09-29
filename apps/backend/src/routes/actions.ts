@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { ConfirmActionSchema } from '@kairo/shared';
+import { ConfirmActionSchema } from '@orbit/shared';
 import { confirmAction } from '../tools/executor';
 
 export async function actionRoutes(fastify: FastifyInstance) {

@@ -5,7 +5,7 @@ import {
   Message,
   CreateConversationSchema,
   UpdateConversationSchema,
-} from '@kairo/shared';
+} from '@orbit/shared';
 
 export async function conversationRoutes(fastify: FastifyInstance) {
   // List user conversations (ordered by updated_at descending)

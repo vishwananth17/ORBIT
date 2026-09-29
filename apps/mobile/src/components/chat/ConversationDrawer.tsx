@@ -10,7 +10,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Plus, X, Search, MessageSquare, Trash2, Pin } from 'lucide-react-native';
-import { Conversation } from '@kairo/shared';
+import { Conversation } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 

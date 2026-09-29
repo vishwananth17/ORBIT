@@ -7,7 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Calendar, Clock, CheckCircle2, Circle, AlertCircle } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
-import { AgendaItem } from '@kairo/shared';
+import { AgendaItem } from '@orbit/shared';
 
 interface AgendaTimelineProps {
   items: AgendaItem[];

@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { query } from '../db';
 import { config } from '../config';
-import { MemoryCategory, MemorySource } from '@kairo/shared';
+import { MemoryCategory, MemorySource } from '@orbit/shared';
 import { generateEmbedding, formatVectorForPg } from './embeddings';
 import { v4 as uuidv4 } from 'uuid';
 

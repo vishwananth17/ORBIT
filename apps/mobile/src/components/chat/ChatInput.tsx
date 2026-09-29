@@ -6,9 +6,14 @@ import {
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from 'react-native';
 import { ArrowUp, Square, Mic } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../theme/ThemeContext';
+import { useAuthStore } from '../../store/authStore';
+import { voiceService } from '../../services/voiceService';
+import { apiClient } from '../../api/client';
 import { spacing, borderRadius, typography } from '../../theme';
 
 interface ChatInputProps {
@@ -25,7 +30,38 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   disabled = false,
 }) => {
   const { colors } = useTheme();
+  const { token } = useAuthStore();
   const [inputText, setInputText] = useState('');
+  const [isRecordingAudio, setIsRecordingAudio] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+
+  const handleToggleMic = async () => {
+    if (!isRecordingAudio) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const started = await voiceService.startRecording();
+      if (started) {
+        setIsRecordingAudio(true);
+      }
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      setIsRecordingAudio(false);
+      setIsTranscribing(true);
+      try {
+        const audio = await voiceService.stopRecording();
+        if (audio && audio.base64) {
+          const res = await apiClient.transcribeAudio(audio.base64, 'audio/m4a', token);
+          if (res.text) {
+            setInputText((prev) => (prev ? `${prev} ${res.text}` : res.text));
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
+        }
+      } catch (err: any) {
+        console.warn('Transcription error:', err.message);
+      } finally {
+        setIsTranscribing(false);
+      }
+    }
+  };
 
   const handleSend = () => {
     const trimmed = inputText.trim();
@@ -42,13 +78,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.borderSubtle }]}>
         <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
           <TouchableOpacity
-            style={styles.micButton}
+            style={[
+              styles.micButton,
+              isRecordingAudio && { backgroundColor: colors.destructive + '20' },
+            ]}
             accessibilityLabel="Voice dictation"
-            onPress={() => {
-              // Phase 5 voice trigger placeholder
-            }}
+            onPress={handleToggleMic}
+            disabled={isTranscribing}
           >
-            <Mic size={18} color={colors.textTertiary} />
+            {isTranscribing ? (
+              <ActivityIndicator size="small" color={colors.accent} />
+            ) : (
+              <Mic
+                size={18}
+                color={isRecordingAudio ? colors.destructive : colors.textTertiary}
+              />
+            )}
           </TouchableOpacity>
 
           <TextInput

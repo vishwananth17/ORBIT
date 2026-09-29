@@ -12,7 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { X, Check, Sparkles, Pin } from 'lucide-react-native';
-import { Memory, MemoryCategory } from '@kairo/shared';
+import { Memory, MemoryCategory } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 

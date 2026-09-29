@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { SendMessageSchema } from '@kairo/shared';
+import { SendMessageSchema } from '@orbit/shared';
 import { executeChatStream } from '../agent/loop';
 
 export async function chatRoutes(fastify: FastifyInstance) {

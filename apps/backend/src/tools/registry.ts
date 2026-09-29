@@ -1,4 +1,4 @@
-import { PermissionLevel, TOOL_NAMES, SENSITIVE_WRITE_TOOLS } from '@kairo/shared';
+import { PermissionLevel, TOOL_NAMES, SENSITIVE_WRITE_TOOLS } from '@orbit/shared';
 import Anthropic from '@anthropic-ai/sdk';
 
 export interface OrbitToolDefinition {

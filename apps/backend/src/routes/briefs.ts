@@ -3,9 +3,9 @@
 // ============================================================================
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { pool } from '@kairo/database';
+import { pool } from '@orbit/database';
 import { generateDailyBrief } from '../proactivity/briefGenerator';
-import { BriefType } from '@kairo/shared';
+import { BriefType } from '@orbit/shared';
 
 export async function briefsRoutes(fastify: FastifyInstance) {
   // 1. GET /api/briefs/today - Fetch or auto-generate today's brief

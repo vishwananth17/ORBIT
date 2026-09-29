@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Pin, Trash2, Edit3, Sparkles } from 'lucide-react-native';
-import { Memory, MemoryCategory } from '@kairo/shared';
+import { Memory, MemoryCategory } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 

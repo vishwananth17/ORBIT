@@ -13,14 +13,16 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Settings, MessageSquare, Sparkles, Moon, Sun } from 'lucide-react-native';
+import { Settings, MessageSquare, Sparkles, Moon, Sun, Mic } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuthStore } from '../../store/authStore';
 import { useTodayStore } from '../../store/todayStore';
 import { MorningBriefCard } from '../../components/today/MorningBriefCard';
 import { AgendaTimeline } from '../../components/today/AgendaTimeline';
 import { ProactiveNudgeCard } from '../../components/today/ProactiveNudgeCard';
-import { SuggestedAction } from '@kairo/shared';
+import { QuickCaptureModal } from '../../components/voice/QuickCaptureModal';
+import { voiceService } from '../../services/voiceService';
+import { SuggestedAction } from '@orbit/shared';
 
 interface TodayScreenProps {
   onOpenChat: (initialPrompt?: string) => void;
@@ -44,6 +46,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
   } = useTodayStore();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [quickCaptureVisible, setQuickCaptureVisible] = useState(false);
 
   useEffect(() => {
     loadToday();
@@ -53,6 +56,21 @@ export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
     setRefreshing(true);
     await loadToday();
     setRefreshing(false);
+  };
+
+  const handleToggleAudio = () => {
+    if (isPlayingAudio) {
+      voiceService.stopSpeaking();
+      togglePlayAudio();
+    } else {
+      if (activeBrief) {
+        togglePlayAudio();
+        const script = activeBrief.audio_summary || activeBrief.summary;
+        voiceService.speak(script, () => {
+          togglePlayAudio();
+        });
+      }
+    }
   };
 
   const getGreeting = () => {
@@ -88,6 +106,15 @@ export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
         </View>
 
         <View style={styles.headerButtons}>
+          <TouchableOpacity
+            onPress={() => setQuickCaptureVisible(true)}
+            style={[styles.headerIconBtn, { backgroundColor: colors.accent + '15' }]}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Quick capture thought"
+          >
+            <Mic size={18} color={colors.accent} />
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => onOpenChat()}
             style={[styles.headerIconBtn, { backgroundColor: colors.surface }]}
@@ -133,7 +160,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
                 brief={activeBrief}
                 isPlayingAudio={isPlayingAudio}
                 isGenerating={isGenerating}
-                onToggleAudio={togglePlayAudio}
+                onToggleAudio={handleToggleAudio}
                 onMarkRead={() => markRead(activeBrief.id)}
                 onRegenerate={() => generateBrief(activeBrief.type)}
               />
@@ -186,6 +213,13 @@ export function TodayScreen({ onOpenChat, onOpenSettings }: TodayScreenProps) {
           </>
         )}
       </ScrollView>
+
+      {/* Quick Capture Voice/Text Modal */}
+      <QuickCaptureModal
+        visible={quickCaptureVisible}
+        onClose={() => setQuickCaptureVisible(false)}
+        onSuccess={() => loadToday()}
+      />
     </View>
   );
 }

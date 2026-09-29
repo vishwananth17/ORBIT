@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Mail, Calendar, Trash2, Check, X, ShieldAlert, Sparkles } from 'lucide-react-native';
-import { TOOL_NAMES } from '@kairo/shared';
+import { TOOL_NAMES } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 

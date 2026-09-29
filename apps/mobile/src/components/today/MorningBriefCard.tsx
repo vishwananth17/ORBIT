@@ -7,7 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Sparkles, Play, Pause, Volume2, Check, RefreshCw } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
-import { DailyBrief } from '@kairo/shared';
+import { DailyBrief } from '@orbit/shared';
 
 interface MorningBriefCardProps {
   brief: DailyBrief;

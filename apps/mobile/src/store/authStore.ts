@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
-import { User } from '@kairo/shared';
+import { User } from '@orbit/shared';
 
 interface AuthState {
   user: User | null;

@@ -1,4 +1,4 @@
-import { User, Memory, Task } from '@kairo/shared';
+import { User, Memory, Task } from '@orbit/shared';
 
 export interface PromptContext {
   user: User;

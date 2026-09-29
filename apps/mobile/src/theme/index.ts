@@ -1,5 +1,5 @@
 // ============================================================================
-// Kairo Mobile - Minimal Design System & Color Tokens
+// Orbit Mobile - Minimal Design System & Color Tokens
 // ============================================================================
 
 export type ThemeMode = 'dark' | 'light' | 'system';

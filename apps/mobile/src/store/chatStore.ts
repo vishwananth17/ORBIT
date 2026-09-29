@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import * as Haptics from 'expo-haptics';
-import { Conversation, Message } from '@kairo/shared';
+import { Conversation, Message } from '@orbit/shared';
 import { apiClient } from '../api/client';
 import { useAuthStore } from './authStore';
 import { ActionConfirmationItem } from '../components/chat/ToolConfirmationCard';

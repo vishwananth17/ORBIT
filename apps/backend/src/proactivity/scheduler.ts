@@ -5,7 +5,7 @@
 
 import { Queue, Worker, QueueEvents } from 'bullmq';
 import Redis from 'ioredis';
-import { pool } from '@kairo/database';
+import { pool } from '@orbit/database';
 import { generateDailyBrief } from './briefGenerator';
 import { sendPushNotification } from './pushNotifier';
 import { timeStringToMinutes } from './quietHours';

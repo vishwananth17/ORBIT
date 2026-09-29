@@ -1,5 +1,5 @@
-import { pool, query } from '@kairo/database';
-import { User, NotificationSettings } from '@kairo/shared';
+import { pool, query } from '@orbit/database';
+import { User, NotificationSettings } from '@orbit/shared';
 
 export { pool, query };
 

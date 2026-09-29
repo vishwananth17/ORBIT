@@ -3,7 +3,7 @@
 // Respects user quiet hours and delivery preferences
 // ============================================================================
 
-import { pool } from '@kairo/database';
+import { pool } from '@orbit/database';
 import { isCurrentlyInQuietHours } from './quietHours';
 
 export interface PushNotificationPayload {

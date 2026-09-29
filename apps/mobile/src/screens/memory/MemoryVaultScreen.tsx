@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { ArrowLeft, Plus, Search, Brain, X, Sparkles } from 'lucide-react-native';
-import { Memory, MemoryCategory } from '@kairo/shared';
+import { Memory, MemoryCategory } from '@orbit/shared';
 import { useMemoryStore } from '../../store/memoryStore';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';

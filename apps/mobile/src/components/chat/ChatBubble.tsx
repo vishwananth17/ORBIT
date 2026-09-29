@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Sparkles, Copy, Check } from 'lucide-react-native';
-import { Message } from '@kairo/shared';
+import { Message } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 import { StreamingCursor } from './StreamingCursor';

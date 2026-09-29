@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { query } from '../db';
-import { Task } from '@kairo/shared';
+import { Task } from '@orbit/shared';
 import { z } from 'zod';
 
 const TaskInputSchema = z.object({

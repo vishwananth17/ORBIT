@@ -4,7 +4,7 @@ import {
   CreateConversationSchema,
   SendMessageSchema,
   UpdateSettingsSchema,
-} from '@kairo/shared';
+} from '@orbit/shared';
 
 console.log('[Test Suite] Running Orbit Backend & Agent Core Tests...');
 

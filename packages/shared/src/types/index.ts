@@ -1,5 +1,5 @@
 // ============================================================================
-// @kairo/shared - Domain Types
+// @orbit/shared - Domain Types
 // ============================================================================
 
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool';
@@ -257,4 +257,42 @@ export interface NotificationSettingsUpdate {
   proactive_nudges_enabled?: boolean;
   smart_reminders_enabled?: boolean;
 }
+
+// ============================================================================
+// Phase 5: Voice & Quick Capture Types
+// ============================================================================
+
+export type QuickCaptureCategory = 'task' | 'memory' | 'calendar_event' | 'note';
+
+export interface QuickCaptureResult {
+  category: QuickCaptureCategory;
+  raw_input: string;
+  summary: string;
+  confidence: number;
+  extracted_data: {
+    title?: string;
+    description?: string;
+    due_date?: string | null;
+    priority?: TaskPriority;
+    status?: TaskStatus;
+    category?: MemoryCategory;
+    content?: string;
+    importance_score?: number;
+    event_start?: string;
+    event_end?: string;
+  };
+  persisted_id?: string;
+}
+
+export interface VoiceTranscriptionResult {
+  text: string;
+  duration_seconds?: number;
+  language?: string;
+}
+
+export interface VoiceSynthesisResult {
+  audio_base64: string;
+  format: 'mp3';
+}
+
 

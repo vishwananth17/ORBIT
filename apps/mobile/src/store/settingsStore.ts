@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { ThemeMode } from '../theme';
-import { NotificationSettings, SYSTEM_DEFAULTS } from '@kairo/shared';
+import { NotificationSettings, SYSTEM_DEFAULTS } from '@orbit/shared';
 import { apiClient } from '../api/client';
 import { useAuthStore } from './authStore';
 

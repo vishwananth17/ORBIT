@@ -11,8 +11,10 @@ import { memoryRoutes } from './routes/memory';
 import { taskRoutes } from './routes/tasks';
 import { actionRoutes } from './routes/actions';
 import { integrationRoutes } from './routes/integrations';
+import multipart from '@fastify/multipart';
 import { briefsRoutes } from './routes/briefs';
 import { notificationsRoutes } from './routes/notifications';
+import { voiceRoutes } from './routes/voice';
 import { startProactiveScheduler, stopProactiveScheduler } from './proactivity/scheduler';
 import { pool } from './db';
 
@@ -48,6 +50,12 @@ async function main() {
     timeWindow: '1 minute',
   });
 
+  await server.register(multipart, {
+    limits: {
+      fileSize: 25 * 1024 * 1024,
+    },
+  });
+
   // 2. Health Check
   server.get('/health', async () => {
     return {
@@ -73,6 +81,7 @@ async function main() {
       await api.register(integrationRoutes, { prefix: '/integrations' });
       await api.register(briefsRoutes, { prefix: '/briefs' });
       await api.register(notificationsRoutes, { prefix: '/notifications' });
+      await api.register(voiceRoutes, { prefix: '/voice' });
     },
     { prefix: '/api' }
   );

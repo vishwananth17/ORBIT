@@ -1,7 +1,7 @@
 {
-  "name": "@kairo/shared",
+  "name": "@orbit/shared",
   "version": "1.0.0",
-  "description": "Shared TypeScript types, Zod schemas, and constants for Kairo",
+  "description": "Shared TypeScript types, Zod schemas, and constants for Orbit",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {

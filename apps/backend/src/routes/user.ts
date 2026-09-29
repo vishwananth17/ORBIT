@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { query, getUserSettings } from '../db';
-import { User, NotificationSettings, UpdateSettingsSchema } from '@kairo/shared';
+import { User, NotificationSettings, UpdateSettingsSchema } from '@orbit/shared';
 
 export async function userRoutes(fastify: FastifyInstance) {
   // Get current user profile and settings

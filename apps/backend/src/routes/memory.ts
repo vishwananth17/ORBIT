@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { query } from '../db';
-import { Memory, CreateMemorySchema, UpdateMemorySchema } from '@kairo/shared';
+import { Memory, CreateMemorySchema, UpdateMemorySchema } from '@orbit/shared';
 import { storeMemoryWithConflictResolution } from '../memory/extractor';
 import { retrieveRelevantMemories } from '../memory/retriever';
 import { generateEmbedding, formatVectorForPg } from '../memory/embeddings';

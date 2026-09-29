@@ -3,9 +3,9 @@
 // Generates Morning Briefs & Evening Reviews using Claude 3.5 & Context
 // ============================================================================
 
-import { pool } from '@kairo/database';
+import { pool } from '@orbit/database';
 import Anthropic from '@anthropic-ai/sdk';
-import { DailyBrief, BriefType, AgendaItem, SuggestedAction } from '@kairo/shared';
+import { DailyBrief, BriefType, AgendaItem, SuggestedAction } from '@orbit/shared';
 import { sendPushNotification } from './pushNotifier';
 
 const anthropic = new Anthropic({

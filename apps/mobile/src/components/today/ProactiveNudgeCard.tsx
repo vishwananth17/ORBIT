@@ -7,7 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Lightbulb, ArrowRight, X } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
-import { SuggestedAction } from '@kairo/shared';
+import { SuggestedAction } from '@orbit/shared';
 
 interface ProactiveNudgeCardProps {
   action: SuggestedAction;

@@ -10,7 +10,10 @@ import {
   DailyBrief,
   ProactiveNudge,
   BriefType,
-} from '@kairo/shared';
+  QuickCaptureResult,
+  VoiceTranscriptionResult,
+  VoiceSynthesisResult,
+} from '@orbit/shared';
 
 // Determine backend API URL (supports Android Emulator 10.0.2.2, iOS Simulator localhost, or Expo config)
 const getApiBaseUrl = (): string => {
@@ -224,6 +227,32 @@ export const apiClient = {
       token,
     });
   },
+
+  // Voice & Quick Capture API
+  async transcribeAudio(audioBase64: string, mimeType?: string, token?: string | null): Promise<VoiceTranscriptionResult> {
+    return this.request('/api/voice/transcribe', {
+      method: 'POST',
+      body: JSON.stringify({ audio_base64: audioBase64, mime_type: mimeType }),
+      token,
+    });
+  },
+
+  async synthesizeVoice(text: string, voice?: string, token?: string | null): Promise<VoiceSynthesisResult> {
+    return this.request('/api/voice/synthesize', {
+      method: 'POST',
+      body: JSON.stringify({ text, voice }),
+      token,
+    });
+  },
+
+  async quickCapture(input?: string, audioBase64?: string, token?: string | null): Promise<{ result: QuickCaptureResult }> {
+    return this.request('/api/voice/quick-capture', {
+      method: 'POST',
+      body: JSON.stringify({ input, audio_base64: audioBase64 }),
+      token,
+    });
+  },
+
 
 
   // User Profile & Settings

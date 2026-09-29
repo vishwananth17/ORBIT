@@ -1,5 +1,5 @@
 -- ============================================================================
--- 001_initial_schema.sql: Kairo Complete Production Database Schema
+-- 001_initial_schema.sql: Orbit Complete Production Database Schema
 -- Includes PostgreSQL extensions, pgvector (1536d), RLS, indexes & RPCs
 -- ============================================================================
 

@@ -3,8 +3,8 @@
 // ============================================================================
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { pool } from '@kairo/database';
-import { NotificationSettingsUpdate } from '@kairo/shared';
+import { pool } from '@orbit/database';
+import { NotificationSettingsUpdate } from '@orbit/shared';
 import { sendPushNotification } from '../proactivity/pushNotifier';
 
 export async function notificationsRoutes(fastify: FastifyInstance) {

@@ -7,7 +7,7 @@ import { retrieveRelevantMemories } from '../memory/retriever';
 import { extractMemoriesFromConversation } from '../memory/extractor';
 import { getAnthropicToolDefinitions } from '../tools/registry';
 import { handleToolCall } from '../tools/executor';
-import { User, Message, StreamEvent, TOOL_NAMES } from '@kairo/shared';
+import { User, Message, StreamEvent, TOOL_NAMES } from '@orbit/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 let anthropicClient: Anthropic | null = null;

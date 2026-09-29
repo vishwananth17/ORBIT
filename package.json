@@ -1,20 +1,20 @@
 {
-  "name": "kairo-monorepo",
+  "name": "orbit-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Kairo - Production-Ready Personal AI Agent Monorepo",
+  "description": "Orbit - Production-Ready Personal AI Agent Monorepo",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
-    "dev:backend": "npm --workspace=@kairo/backend run dev",
-    "dev:mobile": "npm --workspace=@kairo/mobile run start",
-    "build:packages": "npm --workspace=@kairo/shared run build && npm --workspace=@kairo/database run build",
-    "build:backend": "npm --workspace=@kairo/backend run build",
+    "dev:backend": "npm --workspace=@orbit/backend run dev",
+    "dev:mobile": "npm --workspace=@orbit/mobile run start",
+    "build:packages": "npm --workspace=@orbit/shared run build && npm --workspace=@orbit/database run build",
+    "build:backend": "npm --workspace=@orbit/backend run build",
     "test": "npm --workspaces run test --if-present",
     "lint": "npm --workspaces run lint --if-present",
-    "db:migrate": "npm --workspace=@kairo/database run migrate",
+    "db:migrate": "npm --workspace=@orbit/database run migrate",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down"
   },
@@ -26,6 +26,6 @@
     "claude",
     "pgvector"
   ],
-  "author": "Kairo Team",
+  "author": "Orbit Team",
   "license": "MIT"
 }

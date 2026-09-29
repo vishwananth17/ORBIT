@@ -16,9 +16,9 @@ COPY packages/ ./packages/
 COPY apps/backend/ ./apps/backend/
 
 # Build shared packages and backend
-RUN npm --workspace=@kairo/shared run build && \
-    npm --workspace=@kairo/database run build && \
-    npm --workspace=@kairo/backend run build
+RUN npm --workspace=@orbit/shared run build && \
+    npm --workspace=@orbit/database run build && \
+    npm --workspace=@orbit/backend run build
 
 # Production runtime stage
 FROM node:22-alpine AS runner

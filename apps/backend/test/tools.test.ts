@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { TOOL_NAMES } from '@kairo/shared';
+import { TOOL_NAMES } from '@orbit/shared';
 import {
   doesToolRequireConfirmation,
   getAnthropicToolDefinitions,
