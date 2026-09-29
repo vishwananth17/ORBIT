@@ -200,3 +200,61 @@ export interface ActionLog {
   executed_at?: string | null;
   created_at: string;
 }
+
+export type BriefType = 'morning_brief' | 'evening_review' | 'smart_nudge';
+
+export interface AgendaItem {
+  id: string;
+  type: 'calendar_event' | 'task';
+  title: string;
+  time?: string | null;
+  priority?: TaskPriority;
+  status?: TaskStatus;
+  completed?: boolean;
+}
+
+export interface SuggestedAction {
+  id: string;
+  title: string;
+  description: string;
+  action_type: 'draft_email' | 'prepare_meeting' | 'reschedule_task' | 'log_memory' | 'custom';
+  payload?: Record<string, unknown>;
+}
+
+export interface DailyBrief {
+  id: string;
+  user_id: string;
+  date: string;
+  type: BriefType;
+  title: string;
+  summary: string;
+  agenda_items: AgendaItem[];
+  suggested_actions: SuggestedAction[];
+  audio_summary?: string | null;
+  read_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProactiveNudge {
+  id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  action_type: string;
+  action_payload: Record<string, unknown>;
+  is_dismissed: boolean;
+  delivered_at?: string | null;
+  created_at: string;
+}
+
+export interface NotificationSettingsUpdate {
+  push_token?: string | null;
+  quiet_hours_start?: string;
+  quiet_hours_end?: string;
+  morning_brief_time?: string;
+  evening_review_time?: string;
+  proactive_nudges_enabled?: boolean;
+  smart_reminders_enabled?: boolean;
+}
+

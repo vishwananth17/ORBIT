@@ -11,6 +11,9 @@ import { memoryRoutes } from './routes/memory';
 import { taskRoutes } from './routes/tasks';
 import { actionRoutes } from './routes/actions';
 import { integrationRoutes } from './routes/integrations';
+import { briefsRoutes } from './routes/briefs';
+import { notificationsRoutes } from './routes/notifications';
+import { startProactiveScheduler, stopProactiveScheduler } from './proactivity/scheduler';
 import { pool } from './db';
 
 const server = Fastify({
@@ -68,15 +71,21 @@ async function main() {
       await api.register(taskRoutes, { prefix: '/tasks' });
       await api.register(actionRoutes, { prefix: '/actions' });
       await api.register(integrationRoutes, { prefix: '/integrations' });
+      await api.register(briefsRoutes, { prefix: '/briefs' });
+      await api.register(notificationsRoutes, { prefix: '/notifications' });
     },
     { prefix: '/api' }
   );
 
-  // 4. Graceful Shutdown
+  // 4. Start Proactive Background Scheduler (BullMQ + Cron)
+  startProactiveScheduler();
+
+  // 5. Graceful Shutdown
   const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
   for (const signal of signals) {
     process.on(signal, async () => {
       server.log.info(`Received ${signal}, shutting down gracefully...`);
+      await stopProactiveScheduler();
       await server.close();
       await pool.end();
       process.exit(0);

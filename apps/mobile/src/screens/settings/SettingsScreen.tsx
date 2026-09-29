@@ -32,9 +32,14 @@ import { apiClient } from '../../api/client';
 interface SettingsScreenProps {
   onBack: () => void;
   onOpenIntegrations: () => void;
+  onOpenNotifications: () => void;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onOpenIntegrations }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({
+  onBack,
+  onOpenIntegrations,
+  onOpenNotifications,
+}) => {
   const { colors, mode, setMode } = useTheme();
   const { user, logout, token } = useAuthStore();
   const {
@@ -196,33 +201,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onOpenIn
         {/* Section: Proactive Quiet Hours */}
         <Text style={[styles.sectionTitle, { color: colors.textTertiary }]}>PROACTIVITY & QUIET HOURS</Text>
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
-          <View style={styles.rowItem}>
+          <TouchableOpacity onPress={onOpenNotifications} style={styles.rowItem}>
             <View style={styles.rowLabelGroup}>
               <Clock size={18} color={colors.accent} />
               <View>
-                <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Quiet Hours</Text>
+                <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Quiet Hours & Daily Briefs</Text>
                 <Text style={[styles.rowDescription, { color: colors.textSecondary }]}>
-                  {notificationSettings.quiet_hours_start} to {notificationSettings.quiet_hours_end}
+                  Schedule morning brief, evening review & quiet hours
                 </Text>
               </View>
             </View>
-            <Text style={[styles.badgeValue, { color: colors.textTertiary }]}>Active</Text>
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: colors.borderSubtle }]} />
-
-          <View style={styles.rowItem}>
-            <View style={styles.rowLabelGroup}>
-              <Shield size={18} color={colors.accent} />
-              <View>
-                <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Morning Brief</Text>
-                <Text style={[styles.rowDescription, { color: colors.textSecondary }]}>
-                  Scheduled daily at {notificationSettings.morning_brief_time}
-                </Text>
-              </View>
-            </View>
-            <Text style={[styles.badgeValue, { color: colors.accent }]}>Enabled</Text>
-          </View>
+            <Text style={[styles.badgeValue, { color: colors.accent }]}>Configure →</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Section: Connected Tools */}

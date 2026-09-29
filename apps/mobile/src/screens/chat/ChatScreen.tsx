@@ -21,9 +21,16 @@ import { spacing, borderRadius, typography } from '../../theme';
 interface ChatScreenProps {
   onOpenSettings: () => void;
   onOpenMemoryVault: () => void;
+  onOpenToday: () => void;
+  initialPrompt?: string | null;
 }
 
-export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings, onOpenMemoryVault }) => {
+export const ChatScreen: React.FC<ChatScreenProps> = ({
+  onOpenSettings,
+  onOpenMemoryVault,
+  onOpenToday,
+  initialPrompt,
+}) => {
   const { colors } = useTheme();
   const {
     conversations,
@@ -50,6 +57,12 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings, onOpenMe
     loadConversations();
   }, []);
 
+  useEffect(() => {
+    if (initialPrompt && initialPrompt.trim()) {
+      sendMessage(initialPrompt);
+    }
+  }, [initialPrompt]);
+
   // Auto-scroll when new messages arrive or when streaming tokens update
   useEffect(() => {
     if (messages.length > 0 || streamingText) {
@@ -70,6 +83,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings, onOpenMe
         onOpenDrawer={() => setDrawerVisible(true)}
         onOpenSettings={onOpenSettings}
         onOpenMemoryVault={onOpenMemoryVault}
+        onOpenToday={onOpenToday}
         onNewChat={newChat}
       />
 

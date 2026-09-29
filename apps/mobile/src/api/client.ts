@@ -1,5 +1,16 @@
 import Constants from 'expo-constants';
-import { StreamEvent, Conversation, Message, User, NotificationSettings, Memory } from '@kairo/shared';
+import {
+  StreamEvent,
+  Conversation,
+  Message,
+  User,
+  NotificationSettings,
+  NotificationSettingsUpdate,
+  Memory,
+  DailyBrief,
+  ProactiveNudge,
+  BriefType,
+} from '@kairo/shared';
 
 // Determine backend API URL (supports Android Emulator 10.0.2.2, iOS Simulator localhost, or Expo config)
 const getApiBaseUrl = (): string => {
@@ -158,6 +169,62 @@ export const apiClient = {
       token,
     });
   },
+
+  // Daily Briefs & Proactivity API
+  async getTodayBrief(token?: string | null): Promise<{ date: string; morning_brief: DailyBrief | null; evening_review: DailyBrief | null }> {
+    return this.request('/api/briefs/today', { token });
+  },
+
+  async generateBrief(type?: BriefType, token?: string | null): Promise<DailyBrief> {
+    return this.request('/api/briefs/generate', {
+      method: 'POST',
+      body: JSON.stringify({ type }),
+      token,
+    });
+  },
+
+  async markBriefRead(id: string, token?: string | null): Promise<DailyBrief> {
+    return this.request(`/api/briefs/${id}/read`, {
+      method: 'PATCH',
+      token,
+    });
+  },
+
+  async getBriefHistory(limit?: number, token?: string | null): Promise<{ briefs: DailyBrief[] }> {
+    const query = limit ? `?limit=${limit}` : '';
+    return this.request(`/api/briefs/history${query}`, { token });
+  },
+
+  async getNotificationSettings(token?: string | null): Promise<NotificationSettings> {
+    return this.request('/api/notifications/settings', { token });
+  },
+
+  async updateNotificationSettings(settings: NotificationSettingsUpdate, token?: string | null): Promise<NotificationSettings> {
+    return this.request('/api/notifications/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+      token,
+    });
+  },
+
+  async testPushNotification(token?: string | null): Promise<{ success: boolean; result: unknown }> {
+    return this.request('/api/notifications/test', {
+      method: 'POST',
+      token,
+    });
+  },
+
+  async getProactiveNudges(token?: string | null): Promise<{ nudges: ProactiveNudge[] }> {
+    return this.request('/api/notifications/nudges', { token });
+  },
+
+  async dismissProactiveNudge(id: string, token?: string | null): Promise<{ success: boolean; nudge: ProactiveNudge }> {
+    return this.request(`/api/notifications/nudges/${id}/dismiss`, {
+      method: 'PATCH',
+      token,
+    });
+  },
+
 
   // User Profile & Settings
   async getProfile(token?: string | null): Promise<{ user: User; settings: NotificationSettings | null }> {

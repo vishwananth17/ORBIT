@@ -9,14 +9,17 @@ import { ChatScreen } from './src/screens/chat/ChatScreen';
 import { SettingsScreen } from './src/screens/settings/SettingsScreen';
 import { MemoryVaultScreen } from './src/screens/memory/MemoryVaultScreen';
 import { IntegrationsScreen } from './src/screens/integrations/IntegrationsScreen';
+import { TodayScreen } from './src/screens/today/TodayScreen';
+import { NotificationSettingsScreen } from './src/screens/settings/NotificationSettingsScreen';
 
-type AppScreen = 'chat' | 'memory' | 'settings' | 'integrations';
+type AppScreen = 'today' | 'chat' | 'memory' | 'settings' | 'integrations' | 'notifications';
 
 function MainAppNavigator() {
   const { colors, isDark } = useTheme();
   const { isAuthenticated, isBiometricLocked, isLoading, initialize } = useAuthStore();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('chat');
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('today');
+  const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
 
   useEffect(() => {
     initialize();
@@ -53,6 +56,18 @@ function MainAppNavigator() {
   // 3. Authenticated App Flow
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'today':
+        return (
+          <TodayScreen
+            onOpenChat={(prompt) => {
+              setInitialChatPrompt(prompt || null);
+              setCurrentScreen('chat');
+            }}
+            onOpenSettings={() => setCurrentScreen('settings')}
+          />
+        );
+      case 'notifications':
+        return <NotificationSettingsScreen onBack={() => setCurrentScreen('settings')} />;
       case 'memory':
         return <MemoryVaultScreen onBack={() => setCurrentScreen('chat')} />;
       case 'integrations':
@@ -62,6 +77,7 @@ function MainAppNavigator() {
           <SettingsScreen
             onBack={() => setCurrentScreen('chat')}
             onOpenIntegrations={() => setCurrentScreen('integrations')}
+            onOpenNotifications={() => setCurrentScreen('notifications')}
           />
         );
       case 'chat':
@@ -70,6 +86,8 @@ function MainAppNavigator() {
           <ChatScreen
             onOpenSettings={() => setCurrentScreen('settings')}
             onOpenMemoryVault={() => setCurrentScreen('memory')}
+            onOpenToday={() => setCurrentScreen('today')}
+            initialPrompt={initialChatPrompt}
           />
         );
     }

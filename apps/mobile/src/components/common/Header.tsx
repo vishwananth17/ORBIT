@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Menu, Settings, Plus, Sparkles, Brain } from 'lucide-react-native';
+import { Menu, Settings, Plus, Sparkles, Brain, Sun } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 
@@ -9,6 +9,7 @@ interface HeaderProps {
   onOpenDrawer: () => void;
   onOpenSettings: () => void;
   onOpenMemoryVault: () => void;
+  onOpenToday?: () => void;
   onNewChat: () => void;
 }
 
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenDrawer,
   onOpenSettings,
   onOpenMemoryVault,
+  onOpenToday,
   onNewChat,
 }) => {
   const { colors } = useTheme();
@@ -43,6 +45,16 @@ export const Header: React.FC<HeaderProps> = ({
       </View>
 
       <View style={styles.rightRow}>
+        {onOpenToday && (
+          <TouchableOpacity
+            onPress={onOpenToday}
+            style={[styles.iconButton, { backgroundColor: colors.surface }]}
+            accessibilityLabel="Open Today's Brief"
+          >
+            <Sun size={18} color="#F59E0B" />
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           onPress={onOpenMemoryVault}
           style={[styles.iconButton, { backgroundColor: colors.surface }]}
