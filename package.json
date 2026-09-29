@@ -12,6 +12,8 @@
     "dev:mobile": "npm --workspace=@orbit/mobile run start",
     "build:packages": "npm --workspace=@orbit/shared run build && npm --workspace=@orbit/database run build",
     "build:backend": "npm --workspace=@orbit/backend run build",
+    "build:web": "npm run build:packages && npm --workspace=@orbit/mobile run build:web",
+    "build": "npm run build:web",
     "test": "npm --workspaces run test --if-present",
     "lint": "npm --workspaces run lint --if-present",
     "db:migrate": "npm --workspace=@orbit/database run migrate",

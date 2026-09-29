@@ -21,10 +21,13 @@ import {
   JournalAnalytics,
 } from '@orbit/shared';
 
-// Determine backend API URL (supports Android Emulator 10.0.2.2, iOS Simulator localhost, or Expo config)
+// Determine backend API URL (supports Vercel env, Android Emulator 10.0.2.2, iOS Simulator localhost, or Expo config)
 const getApiBaseUrl = (): string => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, '');
+  }
   const extraUrl = Constants.expoConfig?.extra?.apiUrl;
-  if (extraUrl) return extraUrl;
+  if (extraUrl) return extraUrl.replace(/\/$/, '');
   return 'http://localhost:4000';
 };
 

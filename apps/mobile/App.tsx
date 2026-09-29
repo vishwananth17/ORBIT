@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useState, Component, ReactNode } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { useAuthStore } from './src/store/authStore';
 import { OnboardingScreen } from './src/screens/auth/OnboardingScreen';
@@ -15,8 +16,31 @@ import { CustomAgentsScreen } from './src/screens/agents/CustomAgentsScreen';
 import { JournalScreen } from './src/screens/journal/JournalScreen';
 import { OfflineSyncBanner } from './src/components/common/OfflineSyncBanner';
 import { offlineSyncService } from './src/services/offlineSyncService';
-
 import { safeStorage } from './src/utils/safeStorage';
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
+  state = { hasError: false, error: null as Error | null };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, info: any) {
+    console.error('Orbit UI Render Error:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, backgroundColor: '#0B0F19', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#00F0FF', fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>Orbit UI Recovered</Text>
+          <Text style={{ color: '#94A3B8', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>{this.state.error?.message}</Text>
+          <TouchableOpacity onPress={() => this.setState({ hasError: false, error: null })} style={{ backgroundColor: '#00F0FF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 }}>
+            <Text style={{ color: '#0B0F19', fontWeight: 'bold' }}>Reload Interface</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 type AppScreen = 'today' | 'chat' | 'memory' | 'settings' | 'integrations' | 'notifications' | 'agents' | 'journal';
 
@@ -143,9 +167,13 @@ function MainAppNavigator() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <MainAppNavigator />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <MainAppNavigator />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
