@@ -8,8 +8,9 @@ import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ChatScreen } from './src/screens/chat/ChatScreen';
 import { SettingsScreen } from './src/screens/settings/SettingsScreen';
 import { MemoryVaultScreen } from './src/screens/memory/MemoryVaultScreen';
+import { IntegrationsScreen } from './src/screens/integrations/IntegrationsScreen';
 
-type AppScreen = 'chat' | 'memory' | 'settings';
+type AppScreen = 'chat' | 'memory' | 'settings' | 'integrations';
 
 function MainAppNavigator() {
   const { colors, isDark } = useTheme();
@@ -54,8 +55,15 @@ function MainAppNavigator() {
     switch (currentScreen) {
       case 'memory':
         return <MemoryVaultScreen onBack={() => setCurrentScreen('chat')} />;
+      case 'integrations':
+        return <IntegrationsScreen onBack={() => setCurrentScreen('settings')} />;
       case 'settings':
-        return <SettingsScreen onBack={() => setCurrentScreen('chat')} />;
+        return (
+          <SettingsScreen
+            onBack={() => setCurrentScreen('chat')}
+            onOpenIntegrations={() => setCurrentScreen('integrations')}
+          />
+        );
       case 'chat':
       default:
         return (

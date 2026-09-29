@@ -8,6 +8,9 @@ import { chatRoutes } from './routes/chat';
 import { conversationRoutes } from './routes/conversations';
 import { userRoutes } from './routes/user';
 import { memoryRoutes } from './routes/memory';
+import { taskRoutes } from './routes/tasks';
+import { actionRoutes } from './routes/actions';
+import { integrationRoutes } from './routes/integrations';
 import { pool } from './db';
 
 const server = Fastify({
@@ -62,6 +65,9 @@ async function main() {
       await api.register(conversationRoutes, { prefix: '/conversations' });
       await api.register(userRoutes, { prefix: '/user' });
       await api.register(memoryRoutes, { prefix: '/memories' });
+      await api.register(taskRoutes, { prefix: '/tasks' });
+      await api.register(actionRoutes, { prefix: '/actions' });
+      await api.register(integrationRoutes, { prefix: '/integrations' });
     },
     { prefix: '/api' }
   );

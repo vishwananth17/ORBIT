@@ -125,6 +125,40 @@ export const apiClient = {
     });
   },
 
+  // Actions & Two-Phase Confirmation API
+  async confirmAction(
+    actionId: string,
+    approved: boolean,
+    modifiedPayload?: Record<string, unknown>,
+    token?: string | null
+  ): Promise<{ success: boolean; status: string; result?: unknown }> {
+    return this.request('/api/actions/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ action_id: actionId, approved, modified_payload: modifiedPayload }),
+      token,
+    });
+  },
+
+  // Third-Party Integrations (OAuth)
+  async listIntegrations(token?: string | null): Promise<Array<{ provider: string; name: string; description: string; is_connected: boolean }>> {
+    const res = await this.request<{ integrations: Array<{ provider: string; name: string; description: string; is_connected: boolean }> }>('/api/integrations', { token });
+    return res.integrations;
+  },
+
+  async connectIntegration(provider: string, token?: string | null): Promise<void> {
+    await this.request(`/api/integrations/${provider}/connect`, {
+      method: 'POST',
+      token,
+    });
+  },
+
+  async disconnectIntegration(provider: string, token?: string | null): Promise<void> {
+    await this.request(`/api/integrations/${provider}`, {
+      method: 'DELETE',
+      token,
+    });
+  },
+
   // User Profile & Settings
   async getProfile(token?: string | null): Promise<{ user: User; settings: NotificationSettings | null }> {
     return this.request<{ user: User; settings: NotificationSettings | null }>('/api/user/me', { token });

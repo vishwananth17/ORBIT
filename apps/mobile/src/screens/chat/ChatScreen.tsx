@@ -15,6 +15,7 @@ import { ChatBubble } from '../../components/chat/ChatBubble';
 import { ChatInput } from '../../components/chat/ChatInput';
 import { EmptyState } from '../../components/chat/EmptyState';
 import { ConversationDrawer } from '../../components/chat/ConversationDrawer';
+import { ToolConfirmationCard } from '../../components/chat/ToolConfirmationCard';
 import { spacing, borderRadius, typography } from '../../theme';
 
 interface ChatScreenProps {
@@ -28,6 +29,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings, onOpenMe
     conversations,
     activeConversationId,
     messages,
+    actions,
     isStreaming,
     streamingText,
     error,
@@ -37,6 +39,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings, onOpenMe
     sendMessage,
     stopStreaming,
     deleteConversation,
+    confirmAction,
     clearError,
   } = useChatStore();
 
@@ -95,9 +98,17 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onOpenSettings, onOpenMe
             contentContainerStyle={styles.messageList}
             renderItem={({ item }) => <ChatBubble message={item} />}
             ListFooterComponent={
-              isStreaming ? (
-                <ChatBubble isStreaming streamingText={streamingText} />
-              ) : null
+              <View>
+                {actions.map((act) => (
+                  <ToolConfirmationCard
+                    key={act.actionId}
+                    action={act}
+                    onConfirm={(id) => confirmAction(id, true)}
+                    onReject={(id) => confirmAction(id, false)}
+                  />
+                ))}
+                {isStreaming && <ChatBubble isStreaming streamingText={streamingText} />}
+              </View>
             }
           />
         )}

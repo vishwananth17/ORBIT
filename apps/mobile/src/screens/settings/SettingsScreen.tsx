@@ -21,6 +21,7 @@ import {
   LogOut,
   Trash2,
   Shield,
+  Link2,
 } from 'lucide-react-native';
 import { useAuthStore } from '../../store/authStore';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -30,9 +31,10 @@ import { apiClient } from '../../api/client';
 
 interface SettingsScreenProps {
   onBack: () => void;
+  onOpenIntegrations: () => void;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onOpenIntegrations }) => {
   const { colors, mode, setMode } = useTheme();
   const { user, logout, token } = useAuthStore();
   const {
@@ -221,6 +223,23 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
             </View>
             <Text style={[styles.badgeValue, { color: colors.accent }]}>Enabled</Text>
           </View>
+        </View>
+
+        {/* Section: Connected Tools */}
+        <Text style={[styles.sectionTitle, { color: colors.textTertiary }]}>EXTERNAL TOOLS</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
+          <TouchableOpacity onPress={onOpenIntegrations} style={styles.rowItem}>
+            <View style={styles.rowLabelGroup}>
+              <Link2 size={18} color={colors.accent} />
+              <View>
+                <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Connected Integrations</Text>
+                <Text style={[styles.rowDescription, { color: colors.textSecondary }]}>
+                  Google Calendar, Gmail, and Drive OAuth settings
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.badgeValue, { color: colors.accent }]}>Manage →</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Section: Privacy & Data Sovereignty */}

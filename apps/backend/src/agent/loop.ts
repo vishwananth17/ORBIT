@@ -5,7 +5,9 @@ import { query } from '../db';
 import { buildSystemPrompt } from './prompt';
 import { retrieveRelevantMemories } from '../memory/retriever';
 import { extractMemoriesFromConversation } from '../memory/extractor';
-import { User, Message, StreamEvent } from '@kairo/shared';
+import { getAnthropicToolDefinitions } from '../tools/registry';
+import { handleToolCall } from '../tools/executor';
+import { User, Message, StreamEvent, TOOL_NAMES } from '@kairo/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 let anthropicClient: Anthropic | null = null;
@@ -122,6 +124,7 @@ export async function executeChatStream(params: StreamChatParams) {
         max_tokens: 2048,
         system: systemPrompt,
         messages: anthropicMessages,
+        tools: getAnthropicToolDefinitions(),
       });
 
       for await (const chunk of stream) {
@@ -133,23 +136,94 @@ export async function executeChatStream(params: StreamChatParams) {
           sendEvent({ type: 'token', text: tokenText });
         }
       }
+
+      // Check if Claude requested tool calls upon completion of message
+      const finalMessage = await stream.finalMessage();
+      for (const block of finalMessage.content) {
+        if (block.type === 'tool_use') {
+          const toolCall = await handleToolCall(userId, convId, block.name, block.input as Record<string, unknown>);
+          if (toolCall.status === 'confirmation_required') {
+            sendEvent({
+              type: 'tool_confirmation_required',
+              action_id: toolCall.action_id!,
+              tool_name: toolCall.tool_name!,
+              permission_level: 'write',
+              action_payload: toolCall.action_payload!,
+              description: toolCall.description!,
+            });
+          } else if (toolCall.status === 'executed') {
+            sendEvent({
+              type: 'tool_result',
+              tool_name: block.name,
+              result: toolCall.result,
+            });
+          }
+        }
+      }
     } else {
       // Intelligent fallback simulator for instant local testing without API key setup
-      const simulationChunks = [
-        "Hello! I am **Orbit**, your personal AI companion.\n\n",
-        `I received your message: _"${content}"_.\n\n`,
-        "I am currently operating in high-efficiency local development mode. ",
-        "Once you configure your `ANTHROPIC_API_KEY`, I will stream responses directly from **Claude 3.5 Sonnet**.\n\n",
-        "- **Privacy First**: Everything we discuss stays securely stored with pgvector encryption.\n",
-        "- **Action Guardrails**: I will always request your explicit authorization before modifying external services.\n\n",
-        "How can I assist your productivity today?"
-      ];
+      const lower = content.toLowerCase();
+      let triggeredConfirmation = false;
 
-      for (const chunk of simulationChunks) {
-        if (reply.raw.writableEnded) break;
-        fullResponseText += chunk;
-        sendEvent({ type: 'token', text: chunk });
-        await new Promise((r) => setTimeout(r, 60));
+      if (lower.includes('email') && (lower.includes('send') || lower.includes('draft'))) {
+        const actionResult = await handleToolCall(userId, convId, TOOL_NAMES.SEND_EMAIL, {
+          to: 'sarah@example.com',
+          subject: 'Project Sync & Orbit Launch',
+          body: 'Hi Sarah, let us review the Orbit personal agent progress tomorrow afternoon.',
+        });
+
+        const simulationNotice = "I have drafted the email for you.\n\n⚠️ **Action Confirmation Required:** As per our privacy & safety guardrails, please review the confirmation card below before this message is dispatched.";
+        fullResponseText += simulationNotice;
+        sendEvent({ type: 'token', text: simulationNotice });
+
+        sendEvent({
+          type: 'tool_confirmation_required',
+          action_id: actionResult.action_id!,
+          tool_name: TOOL_NAMES.SEND_EMAIL,
+          permission_level: 'write',
+          action_payload: actionResult.action_payload!,
+          description: actionResult.description!,
+        });
+        triggeredConfirmation = true;
+      } else if (lower.includes('schedule') || lower.includes('meeting') || lower.includes('calendar')) {
+        const actionResult = await handleToolCall(userId, convId, TOOL_NAMES.CREATE_CALENDAR_EVENT, {
+          summary: 'Strategy & Focus Sync',
+          start_time: '2026-09-30T10:00:00Z',
+          end_time: '2026-09-30T11:00:00Z',
+          description: 'Focus block scheduled by Orbit.',
+        });
+
+        const simulationNotice = "I have prepared the calendar event.\n\n⚠️ **Action Confirmation Required:** Please review and confirm the proposed schedule below.";
+        fullResponseText += simulationNotice;
+        sendEvent({ type: 'token', text: simulationNotice });
+
+        sendEvent({
+          type: 'tool_confirmation_required',
+          action_id: actionResult.action_id!,
+          tool_name: TOOL_NAMES.CREATE_CALENDAR_EVENT,
+          permission_level: 'write',
+          action_payload: actionResult.action_payload!,
+          description: actionResult.description!,
+        });
+        triggeredConfirmation = true;
+      }
+
+      if (!triggeredConfirmation) {
+        const simulationChunks = [
+          "Hello! I am **Orbit**, your personal AI companion.\n\n",
+          `I received your message: _"${content}"_.\n\n`,
+          "I am currently operating in high-efficiency local development mode with **pgvector continuous memory** and **safe two-phase tool execution**.\n\n",
+          "- **Write Guardrails Active**: I will never send an email or alter your calendar without your explicit in-app confirmation.\n",
+          "- Try asking: _\"Send an email to Sarah confirming lunch\"_ or _\"Schedule a strategy meeting tomorrow\"_ to see the confirmation card in action!\n\n",
+          "What would you like to accomplish next?"
+        ];
+
+        for (const chunk of simulationChunks) {
+          if (reply.raw.writableEnded) break;
+          fullResponseText += chunk;
+          sendEvent({ type: 'token', text: chunk });
+          await new Promise((r) => setTimeout(r, 40));
+        }
       }
     }
 

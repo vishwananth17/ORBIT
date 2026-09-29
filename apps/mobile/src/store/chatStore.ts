@@ -3,11 +3,13 @@ import * as Haptics from 'expo-haptics';
 import { Conversation, Message } from '@kairo/shared';
 import { apiClient } from '../api/client';
 import { useAuthStore } from './authStore';
+import { ActionConfirmationItem } from '../components/chat/ToolConfirmationCard';
 
 interface ChatState {
   conversations: Conversation[];
   activeConversationId: string | null;
   messages: Message[];
+  actions: ActionConfirmationItem[];
   isStreaming: boolean;
   streamingText: string;
   isLoadingMessages: boolean;
@@ -22,6 +24,7 @@ interface ChatState {
   sendMessage: (content: string) => Promise<void>;
   stopStreaming: () => void;
   deleteConversation: (conversationId: string) => Promise<void>;
+  confirmAction: (actionId: string, approved: boolean) => Promise<void>;
   clearError: () => void;
 }
 
@@ -29,6 +32,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
   activeConversationId: null,
   messages: [],
+  actions: [],
   isStreaming: false,
   streamingText: '',
   isLoadingMessages: false,
@@ -130,6 +134,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
             messages: [...state.messages, event.message],
             streamingText: '',
           }));
+        } else if (event.type === 'tool_confirmation_required') {
+          set((state) => ({
+            actions: [
+              ...state.actions,
+              {
+                actionId: event.action_id,
+                toolName: event.tool_name,
+                description: event.description,
+                actionPayload: event.action_payload,
+                status: 'pending',
+              },
+            ],
+          }));
+          try {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          } catch {}
         } else if (event.type === 'error') {
           set({ error: event.message });
         }
@@ -182,6 +202,29 @@ export const useChatStore = create<ChatState>((set, get) => ({
       conversations: updatedConvs,
       ...(get().activeConversationId === conversationId ? { activeConversationId: null, messages: [] } : {}),
     });
+  },
+
+  confirmAction: async (actionId: string, approved: boolean) => {
+    try {
+      const token = useAuthStore.getState().token;
+      const res = await apiClient.confirmAction(actionId, approved, undefined, token);
+      set((state) => ({
+        actions: state.actions.map((a) =>
+          a.actionId === actionId
+            ? { ...a, status: approved ? 'executed' : 'rejected', result: res.result }
+            : a
+        ),
+      }));
+      try {
+        Haptics.notificationAsync(
+          approved
+            ? Haptics.NotificationFeedbackType.Success
+            : Haptics.NotificationFeedbackType.Warning
+        );
+      } catch {}
+    } catch (err: any) {
+      set({ error: err.message });
+    }
   },
 
   clearError: () => set({ error: null }),
