@@ -37,6 +37,9 @@
         }
       ]
     ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "extra": {
       "apiUrl": "http://10.0.2.2:4000",
       "supabaseUrl": "https://example.supabase.co",
