@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import { Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import * as SecureStore from 'expo-secure-store';
+import { safeStorage } from '../utils/safeStorage';
 import { User } from '@orbit/shared';
 
 interface AuthState {
@@ -38,32 +38,53 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initialize: async () => {
     try {
-      // 1. Check biometric hardware
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      const doInit = async () => {
+        let hasHardware = false;
+        let isEnrolled = false;
 
-      // 2. Read stored session
-      const storedToken = await SecureStore.getItemAsync(SECURE_TOKEN_KEY);
-      const storedUser = await SecureStore.getItemAsync(SECURE_USER_KEY);
+        // Local biometrics only supported on physical devices
+        if (Platform.OS !== 'web') {
+          try {
+            hasHardware = await LocalAuthentication.hasHardwareAsync();
+            isEnrolled = await LocalAuthentication.isEnrolledAsync();
+          } catch {
+            // ignore biometrics error
+          }
+        }
 
-      if (storedToken && storedUser) {
-        const user = JSON.parse(storedUser);
+        // Read stored session safely across web and native
+        const storedToken = await safeStorage.getItem(SECURE_TOKEN_KEY);
+        const storedUser = await safeStorage.getItem(SECURE_USER_KEY);
+
+        if (storedToken && storedUser) {
+          try {
+            const user = JSON.parse(storedUser);
+            set({
+              token: storedToken,
+              user,
+              isAuthenticated: true,
+              isBiometricsSupported: hasHardware,
+              isBiometricsEnrolled: isEnrolled,
+              isBiometricLocked: isEnrolled && Platform.OS !== 'web',
+              isLoading: false,
+            });
+            return;
+          } catch {
+            // ignore parse failure
+          }
+        }
+
         set({
-          token: storedToken,
-          user,
-          isAuthenticated: true,
           isBiometricsSupported: hasHardware,
           isBiometricsEnrolled: isEnrolled,
-          isBiometricLocked: isEnrolled, // Lock on cold start if biometric enrolled
           isLoading: false,
         });
-      } else {
-        set({
-          isBiometricsSupported: hasHardware,
-          isBiometricsEnrolled: isEnrolled,
-          isLoading: false,
-        });
-      }
+      };
+
+      // Ensure initialization never hangs the UI
+      const timeout = new Promise<void>((resolve) => setTimeout(resolve, 1500));
+      await Promise.race([doInit(), timeout]);
+      set((state) => ({ isLoading: false }));
     } catch {
       set({ isLoading: false });
     }
@@ -72,7 +93,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loginWithEmail: async (email: string, _password: string) => {
     set({ isLoading: true, error: null });
     try {
-      // In production, exchange via Supabase supabase.auth.signInWithPassword
       const mockUser: User = {
         id: '00000000-0000-0000-0000-000000000001',
         email,
@@ -85,8 +105,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       };
       const token = 'dev-token';
 
-      await SecureStore.setItemAsync(SECURE_TOKEN_KEY, token);
-      await SecureStore.setItemAsync(SECURE_USER_KEY, JSON.stringify(mockUser));
+      await safeStorage.setItem(SECURE_TOKEN_KEY, token);
+      await safeStorage.setItem(SECURE_USER_KEY, JSON.stringify(mockUser));
 
       set({
         user: mockUser,
@@ -114,8 +134,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     };
     const token = 'dev-token';
 
-    await SecureStore.setItemAsync(SECURE_TOKEN_KEY, token);
-    await SecureStore.setItemAsync(SECURE_USER_KEY, JSON.stringify(guestUser));
+    await safeStorage.setItem(SECURE_TOKEN_KEY, token);
+    await safeStorage.setItem(SECURE_USER_KEY, JSON.stringify(guestUser));
 
     set({
       user: guestUser,
@@ -127,8 +147,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    await SecureStore.deleteItemAsync(SECURE_TOKEN_KEY).catch(() => {});
-    await SecureStore.deleteItemAsync(SECURE_USER_KEY).catch(() => {});
+    await safeStorage.deleteItem(SECURE_TOKEN_KEY);
+    await safeStorage.deleteItem(SECURE_USER_KEY);
     set({
       user: null,
       token: null,

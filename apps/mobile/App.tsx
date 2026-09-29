@@ -16,6 +16,8 @@ import { JournalScreen } from './src/screens/journal/JournalScreen';
 import { OfflineSyncBanner } from './src/components/common/OfflineSyncBanner';
 import { offlineSyncService } from './src/services/offlineSyncService';
 
+import { safeStorage } from './src/utils/safeStorage';
+
 type AppScreen = 'today' | 'chat' | 'memory' | 'settings' | 'integrations' | 'notifications' | 'agents' | 'journal';
 
 function MainAppNavigator() {
@@ -28,7 +30,17 @@ function MainAppNavigator() {
   useEffect(() => {
     initialize();
     offlineSyncService.initialize();
+    safeStorage.getItem('orbit_onboarding_completed').then((val) => {
+      if (val === 'true') {
+        setHasCompletedOnboarding(true);
+      }
+    });
   }, []);
+
+  const handleOnboardingComplete = () => {
+    setHasCompletedOnboarding(true);
+    safeStorage.setItem('orbit_onboarding_completed', 'true');
+  };
 
   if (isLoading) {
     return (
@@ -43,7 +55,7 @@ function MainAppNavigator() {
     return (
       <>
         <StatusBar style={isDark ? 'light' : 'dark'} />
-        <OnboardingScreen onComplete={() => setHasCompletedOnboarding(true)} />
+        <OnboardingScreen onComplete={handleOnboardingComplete} />
       </>
     );
   }

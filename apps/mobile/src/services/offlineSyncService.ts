@@ -2,7 +2,7 @@
 // Offline-First Sync Service (Phase 8)
 // ============================================================================
 
-import * as SecureStore from 'expo-secure-store';
+import { safeStorage } from '../utils/safeStorage';
 import { API_BASE_URL, apiClient } from '../api/client';
 import { useSyncStore, PendingAction } from '../store/syncStore';
 
@@ -13,7 +13,7 @@ export const offlineSyncService = {
   // Initialize sync manager: load queued actions and start heartbeat
   async initialize(): Promise<void> {
     try {
-      const stored = await SecureStore.getItemAsync(STORAGE_KEY);
+      const stored = await safeStorage.getItem(STORAGE_KEY);
       if (stored) {
         const queue: PendingAction[] = JSON.parse(stored);
         for (const action of queue) {
@@ -21,7 +21,7 @@ export const offlineSyncService = {
         }
       }
     } catch {
-      // Memory fallback if SecureStore not supported
+      // Memory fallback if storage not supported
     }
 
     await this.checkConnectivity();
@@ -32,7 +32,7 @@ export const offlineSyncService = {
   async persistQueue(): Promise<void> {
     try {
       const queue = useSyncStore.getState().pendingQueue;
-      await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(queue));
+      await safeStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
     } catch {
       // ignore
     }
