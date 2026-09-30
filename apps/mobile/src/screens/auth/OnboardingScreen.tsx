@@ -8,8 +8,6 @@ interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
-const { width } = Dimensions.get('window');
-
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const { colors } = useTheme();
   const [currentSlide, setCurrentSlide] = useState(0);
