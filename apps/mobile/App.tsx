@@ -18,21 +18,31 @@ import { OfflineSyncBanner } from './src/components/common/OfflineSyncBanner';
 import { offlineSyncService } from './src/services/offlineSyncService';
 import { safeStorage } from './src/utils/safeStorage';
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
-  state = { hasError: false, error: null as Error | null };
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null; stack: string | null }> {
+  state = { hasError: false, error: null as Error | null, stack: null as string | null };
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
   componentDidCatch(error: Error, info: any) {
     console.error('Orbit UI Render Error:', error, info);
+    this.setState({ stack: (info?.componentStack || error?.stack || '').trim() });
   }
   render() {
     if (this.state.hasError) {
       return (
         <View style={{ flex: 1, backgroundColor: '#0B0F19', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: '#00F0FF', fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>Orbit UI Recovered</Text>
-          <Text style={{ color: '#94A3B8', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>{this.state.error?.message}</Text>
-          <TouchableOpacity onPress={() => this.setState({ hasError: false, error: null })} style={{ backgroundColor: '#00F0FF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 }}>
+          <Text style={{ color: '#EF4444', fontSize: 14, textAlign: 'center', marginBottom: 12, fontWeight: '600' }}>
+            {this.state.error?.message}
+          </Text>
+          {this.state.stack ? (
+            <View style={{ backgroundColor: '#131A2B', padding: 12, borderRadius: 8, maxWidth: '90%', marginBottom: 16 }}>
+              <Text style={{ color: '#94A3B8', fontSize: 11, fontFamily: 'monospace' }}>
+                {this.state.stack}
+              </Text>
+            </View>
+          ) : null}
+          <TouchableOpacity onPress={() => this.setState({ hasError: false, error: null, stack: null })} style={{ backgroundColor: '#00F0FF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 }}>
             <Text style={{ color: '#0B0F19', fontWeight: 'bold' }}>Reload Interface</Text>
           </TouchableOpacity>
         </View>
@@ -165,10 +175,15 @@ function MainAppNavigator() {
   );
 }
 
+const initialMetrics = {
+  frame: { x: 0, y: 0, width: 0, height: 0 },
+  insets: { top: 0, left: 0, right: 0, bottom: 0 },
+};
+
 export default function App() {
   return (
     <ErrorBoundary>
-      <SafeAreaProvider style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
+      <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
         <ThemeProvider>
           <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
             <MainAppNavigator />
