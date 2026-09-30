@@ -157,20 +157,22 @@ function MainAppNavigator() {
   };
 
   return (
-    <>
+    <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: colors.background }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <OfflineSyncBanner />
       {renderScreen()}
-    </>
+    </View>
   );
 }
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <SafeAreaProvider>
+      <SafeAreaProvider style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
         <ThemeProvider>
-          <MainAppNavigator />
+          <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
+            <MainAppNavigator />
+          </View>
         </ThemeProvider>
       </SafeAreaProvider>
     </ErrorBoundary>

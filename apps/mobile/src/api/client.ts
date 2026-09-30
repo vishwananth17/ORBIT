@@ -21,10 +21,18 @@ import {
   JournalAnalytics,
 } from '@orbit/shared';
 
-// Determine backend API URL (supports Vercel env, Android Emulator 10.0.2.2, iOS Simulator localhost, or Expo config)
+import { Platform } from 'react-native';
+
+// Determine backend API URL (supports Web, Vercel env, Android Emulator 10.0.2.2, iOS Simulator localhost)
 const getApiBaseUrl = (): string => {
-  if (process.env.EXPO_PUBLIC_API_URL) {
-    return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, '');
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return 'http://localhost:4000';
+    }
+    if (process.env.EXPO_PUBLIC_API_URL) {
+      return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, '');
+    }
+    return '';
   }
   const extraUrl = Constants.expoConfig?.extra?.apiUrl;
   if (extraUrl) return extraUrl.replace(/\/$/, '');
