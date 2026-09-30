@@ -77,7 +77,7 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
             </View>
             <View>
               <Text style={[styles.toolTitle, { color: colors.textPrimary }]}>
-                {action.toolName.replace(/_/g, ' ').toUpperCase()}
+                {(action.toolName || '').replace(/_/g, ' ').toUpperCase()}
               </Text>
               <Text style={[styles.subtitle, { color: colors.textTertiary }]}>
                 Consequential Write Action
@@ -111,7 +111,7 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
                 },
               ]}
             >
-              {action.status.toUpperCase()}
+              {(action.status || '').toUpperCase()}
             </Text>
           </View>
         </View>

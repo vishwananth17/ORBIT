@@ -36,8 +36,10 @@ export const ConversationDrawer: React.FC<ConversationDrawerProps> = ({
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filtered = conversations.filter((c) =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filtered = (conversations || []).filter((c) =>
+    (c?.title || 'Untitled Conversation')
+      .toLowerCase()
+      .includes((searchQuery || '').toLowerCase())
   );
 
   return (

@@ -81,10 +81,10 @@ export const MemoryVaultScreen: React.FC<MemoryVaultScreenProps> = ({ onBack }) 
     }
   };
 
-  const filteredMemories = memories.filter((m) => {
+  const filteredMemories = (memories || []).filter((m) => {
     const matchesCat = selectedCategory === 'all' || m.category === selectedCategory;
     const matchesQuery =
-      !searchQuery.trim() || m.content.toLowerCase().includes(searchQuery.trim().toLowerCase());
+      !searchQuery?.trim() || (m?.content || '').toLowerCase().includes(searchQuery.trim().toLowerCase());
     return matchesCat && matchesQuery;
   });
 

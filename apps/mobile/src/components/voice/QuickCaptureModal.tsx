@@ -178,7 +178,7 @@ export function QuickCaptureModal({ visible, onClose, onSuccess }: QuickCaptureM
                   <View style={styles.categoryBadge}>
                     {getCategoryIcon(result.category)}
                     <Text style={[styles.categoryText, { color: colors.textPrimary }]}>
-                      {result.category.toUpperCase().replace('_', ' ')}
+                      {(result.category || '').toUpperCase().replace('_', ' ')}
                     </Text>
                   </View>
                   <View style={[styles.confidenceBadge, { backgroundColor: colors.accent + '20' }]}>
