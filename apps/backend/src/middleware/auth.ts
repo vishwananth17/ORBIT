@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import * as jwt from 'jsonwebtoken';
+import { createClient } from '@supabase/supabase-js';
 import { config } from '../config';
 import { ensureUserExists } from '../db';
 
@@ -21,7 +21,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   const authHeader = request.headers.authorization;
 
   // Development bypass / default fallback when testing locally
-  if (config.NODE_ENV === 'development' && (!authHeader || authHeader === 'Bearer dev-token')) {
+  if (config.DEMO_MODE && config.NODE_ENV === 'development' && (!authHeader || authHeader === 'Bearer dev-token')) {
     const devUser: AuthenticatedUser = {
       id: DEV_USER_ID,
       email: 'dev@orbit.ai',
@@ -47,14 +47,14 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   const token = authHeader.split(' ')[1];
 
   try {
-    // Decode and verify JWT
-    // Supabase sign tokens with SUPABASE_JWT_SECRET
-    const decoded = jwt.verify(token, config.SUPABASE_JWT_SECRET, { algorithms: ['HS256'] }) as any;
-
+    // Validate against the auth provider, including revoked/expired sessions.
+    const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY,
+      { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) throw new Error('Invalid authentication session');
+    const decoded = data.user;
     const user: AuthenticatedUser = {
-      id: decoded.sub,
-      email: decoded.email || `${decoded.sub}@user.orbit.ai`,
-      role: decoded.role || 'authenticated',
+      id: decoded.id, email: decoded.email || '', role: 'authenticated',
     };
 
     // Ensure user record exists in database
