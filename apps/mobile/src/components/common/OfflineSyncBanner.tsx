@@ -1,3 +1,4 @@
+import { WifiOff } from 'lucide-react-native';
 // ============================================================================
 // Offline-First Network Status & Sync Banner (Phase 8)
 // ============================================================================
@@ -33,7 +34,7 @@ export function OfflineSyncBanner() {
 
   return (
     <View style={[styles.banner, { backgroundColor: '#F59E0B22', borderColor: '#F59E0B' }]}>
-      <Text style={styles.icon}>📡</Text>
+      <WifiOff size={16} color={colors.warning} strokeWidth={1.6} />
       <View style={{ flex: 1, marginLeft: 8 }}>
         <Text style={[styles.text, { color: '#F59E0B' }]}>
           Offline Mode • {pendingQueue.length > 0 ? `${pendingQueue.length} changes queued` : 'Local cache active'}
