@@ -31,6 +31,7 @@ for (const suite of testSuites) {
   console.log(`▶ Executing: ${suite.name} (${suite.file})...`);
 
   const result = spawnSync('npx', ['tsx', filePath], {
+    env: { ...process.env, ...(suite.file === 'foundation.test.ts' ? { DEMO_MODE: 'false' } : {}) },
     shell: true,
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
