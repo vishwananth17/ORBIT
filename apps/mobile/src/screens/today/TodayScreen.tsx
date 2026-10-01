@@ -235,7 +235,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
               >
                 <View style={styles.journalHeaderRow}>
                   <View style={styles.journalIconBadge}>
-                    <Text style={{ fontSize: 20 }}>🌙</Text>
+                    <Moon size={20} color={colors.textSecondary} strokeWidth={1.6} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={[styles.journalCardTitle, { color: colors.textPrimary }]}>
