@@ -7,6 +7,7 @@ import { spawnSync } from 'child_process';
 import path from 'path';
 
 const testSuites = [
+  { name: 'SSE CORS header propagation', file: 'sse.test.ts' },
   { name: 'Groq provider safety and streaming', file: 'groq.test.ts' },
   { name: 'Foundation ownership and read continuation', file: 'foundation.test.ts' },
   { name: 'Agent Core & System Prompt', file: 'agent.test.ts' },
