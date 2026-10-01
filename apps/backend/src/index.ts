@@ -83,7 +83,8 @@ async function main() {
   );
 
   // 4. Start Proactive Background Scheduler (BullMQ + Cron)
-  startProactiveScheduler();
+  if (config.PROACTIVE_ENABLED) startProactiveScheduler();
+  else server.log.info('Proactive scheduling disabled for this deployment');
 
   // 5. Graceful Shutdown
   const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
