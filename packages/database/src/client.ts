@@ -43,7 +43,7 @@ async function checkPostgresConnectivity(): Promise<boolean> {
     return true;
   } catch (err: any) {
     isPostgresAvailable = false;
-    console.warn('[Orbit Database] PostgreSQL unavailable. Only explicit demo/test mode permits temporary in-memory data.');
+    console.warn('[Orbit Database] PostgreSQL unavailable; connection error code:', err.code || err.name || 'unknown');
     return false;
   }
 }
