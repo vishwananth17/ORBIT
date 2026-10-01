@@ -18,6 +18,7 @@ interface AuthState {
   // Actions
   initialize: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<boolean>;
   loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
   unlockWithBiometrics: () => Promise<boolean>;
@@ -121,6 +122,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (err: any) {
       set({ error: err.message || 'Login failed', isLoading: false });
+    }
+  },
+
+  signUpWithEmail: async (email: string, password: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+      if (!url || !key) throw new Error('Sign-up is not configured.');
+      const auth = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data, error } = await auth.auth.signUp({ email, password });
+      if (error || !data.user) throw new Error(error?.message || 'Sign-up failed');
+      set({ isLoading: false });
+      if (data.session) await get().loginWithEmail(email, password);
+      return true;
+    } catch (err: any) {
+      set({ error: err.message || 'Sign-up failed', isLoading: false });
+      return false;
     }
   },
 
