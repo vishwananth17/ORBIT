@@ -21,6 +21,7 @@ export const LoginScreen: React.FC = () => {
   const { colors } = useTheme();
   const {
     loginWithEmail,
+    signUpWithEmail,
     loginAsGuest,
     unlockWithBiometrics,
     isBiometricsSupported,
@@ -30,13 +31,21 @@ export const LoginScreen: React.FC = () => {
     clearError,
   } = useAuthStore();
 
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [notice, setNotice] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) return;
-    await loginWithEmail(email.trim(), password.trim());
+    setNotice('');
+    if (isSignUp) {
+      const created = await signUpWithEmail(email.trim(), password);
+      if (created) setNotice('Check your email to confirm your account, then return here to sign in.');
+    } else {
+      await loginWithEmail(email.trim(), password);
+    }
   };
 
   if (showPreview) return <DesignPreviewScreen onBack={() => setShowPreview(false)} />;
@@ -66,6 +75,7 @@ export const LoginScreen: React.FC = () => {
             </View>
           )}
 
+          {!!notice && <Text accessibilityRole="alert" style={{color: colors.textPrimary, marginBottom: 16, lineHeight: 22}}>{notice}</Text>}
           {/* Form */}
           <Card style={styles.form}>
             <View style={[styles.inputGroup, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
@@ -114,11 +124,15 @@ export const LoginScreen: React.FC = () => {
                 <ActivityIndicator color={colors.accentText} />
               ) : (
                 <Text style={[styles.primaryButtonText, { color: colors.accentText }]}>
-                  Sign In
+                  {isSignUp ? 'Create account' : 'Sign In'}
                 </Text>
               )}
             </TouchableOpacity>
 
+            <TouchableOpacity onPress={() => { setIsSignUp(!isSignUp); clearError(); setNotice(''); }} style={styles.guestButton}>
+              <Text style={{color: colors.accent}}>{isSignUp ? 'Already have an account? Sign in' : 'New to Orbit? Create an account'}</Text>
+            </TouchableOpacity>
+            {isSignUp && <Text style={{color: colors.textSecondary, fontSize: 12, lineHeight: 18}}>Choose your own password. A confirmation email may be sent by Supabase. Your account does not connect Gmail or Calendar.</Text>}
             {/* Biometric Unlock Trigger */}
             {isBiometricsSupported && (
               <TouchableOpacity
