@@ -1,3 +1,4 @@
+import { Card } from '../../components/common/Card';
 import React, { useState } from 'react';
 import {
   View,
@@ -50,7 +51,7 @@ export const LoginScreen: React.FC = () => {
             </View>
             <Text style={[styles.title, { color: colors.textPrimary }]}>Welcome to Orbit</Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Your proactive personal intelligence agent.
+              Keep your day, conversations and plans in one place.
             </Text>
           </View>
 
@@ -62,7 +63,7 @@ export const LoginScreen: React.FC = () => {
           )}
 
           {/* Form */}
-          <View style={styles.form}>
+          <Card style={styles.form}>
             <View style={[styles.inputGroup, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
               <Mail size={18} color={colors.textTertiary} />
               <TextInput
@@ -128,21 +129,21 @@ export const LoginScreen: React.FC = () => {
             )}
 
             {/* Quick Demo Access */}
-            <TouchableOpacity
+            {process.env.EXPO_PUBLIC_DEMO_MODE === 'true' && <TouchableOpacity
               onPress={loginAsGuest}
               style={[styles.guestButton, { backgroundColor: colors.surfaceSecondary }]}
             >
               <Text style={[styles.guestButtonText, { color: colors.textSecondary }]}>
-                Continue as Guest (1-Tap Demo)
+                Open demo
               </Text>
-            </TouchableOpacity>
-          </View>
+            </TouchableOpacity>}
+          </Card>
 
           {/* Privacy badge footer */}
           <View style={styles.footer}>
             <ShieldCheck size={14} color={colors.textTertiary} />
             <Text style={[styles.footerText, { color: colors.textTertiary }]}>
-              Biometric keys stay securely in device enclave.
+              Device biometrics unlock an existing signed-in session.
             </Text>
           </View>
         </View>
