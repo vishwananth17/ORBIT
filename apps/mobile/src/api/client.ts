@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { getValidAccessToken } from '../services/authSession';
 import {
   StreamEvent,
   Conversation,
@@ -58,7 +59,8 @@ export const apiClient = {
     endpoint: string,
     options: RequestInit & { token?: string | null } = {}
   ): Promise<T> {
-    const { token, ...fetchOptions } = options;
+    const { token: legacyToken, ...fetchOptions } = options;
+    const token = await getValidAccessToken(legacyToken);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -512,12 +514,14 @@ export const apiClient = {
     };
 
     try {
+      const currentToken = await getValidAccessToken(authToken);
+      if (!currentToken) throw new Error('Please sign in to Orbit before chatting.');
       const url = `${API_BASE_URL}/api/chat/stream`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: authToken ? `Bearer ${authToken}` : 'Bearer dev-token',
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify({
           content,
@@ -528,7 +532,9 @@ export const apiClient = {
       });
 
       if (!response.ok) {
-        throw new Error(`Chat failed (${response.status}). No action was completed.`);
+        if (response.status === 401) throw new Error('Your Orbit session expired. Sign out and sign in again. No action was completed.');
+        const failure = await response.json().catch(() => ({}));
+        throw new Error(failure.message || `Chat failed (${response.status}). No action was completed.`);
       }
 
       // Check for streaming body support
