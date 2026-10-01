@@ -1,3 +1,4 @@
+import { LineIcon } from '../../components/common/LineIcon';
 // ============================================================================
 // Custom Agents & Personas Screen (Phase 6)
 // ============================================================================
@@ -169,18 +170,6 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
     }
   };
 
-  const getIconEmoji = (icon: string) => {
-    switch (icon) {
-      case 'briefcase': return '💼';
-      case 'shield': return '🛡️';
-      case 'trending-up': return '📈';
-      case 'book-open': return '📖';
-      case 'zap': return '⚡';
-      case 'code': return '💻';
-      case 'feather': return '🪶';
-      default: return '🤖';
-    }
-  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -203,7 +192,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
         <View style={[styles.activeBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.bannerLabel, { color: colors.textSecondary }]}>CURRENT ACTIVE PERSONA</Text>
           <View style={styles.activeRow}>
-            <Text style={styles.activeEmoji}>{getIconEmoji(activeAgent?.avatar_icon || 'bot')}</Text>
+            <LineIcon name={activeAgent?.avatar_icon || 'bot'} color={colors.accent} size={26} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.activeName, { color: colors.textPrimary }]}>
                 {activeAgent ? activeAgent.name : 'Orbit Default Agent'}
@@ -237,7 +226,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.iconCircle}>
-                    <Text style={styles.agentEmoji}>{getIconEmoji(agent.avatar_icon)}</Text>
+                    <LineIcon name={agent.avatar_icon} color={colors.accent} size={26} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <View style={styles.nameRow}>
@@ -325,7 +314,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                 style={[styles.presetCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={() => openCreateModal(preset)}
               >
-                <Text style={styles.presetEmoji}>{getIconEmoji(preset.avatar_icon)}</Text>
+                <LineIcon name={preset.avatar_icon} color={colors.accent} size={26} />
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={[styles.presetName, { color: colors.textPrimary }]}>{preset.name}</Text>
                   <Text style={[styles.presetTagline, { color: colors.textSecondary }]} numberOfLines={2}>
@@ -368,7 +357,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                     ]}
                     onPress={() => setAvatarIcon(icon)}
                   >
-                    <Text style={{ fontSize: 20 }}>{getIconEmoji(icon)}</Text>
+                    <LineIcon name={icon} color={colors.textPrimary} />
                   </TouchableOpacity>
                 ))}
               </View>
