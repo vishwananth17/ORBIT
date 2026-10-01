@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { GOOGLE_SCOPES } from '../src/integrations/google';
+import { handleToolCall } from '../src/tools/executor';
+import { generateEmbedding } from '../src/memory/embeddings';
+import { authenticate } from '../src/middleware/auth';
+import { pool } from '@orbit/database';
+(async () => {
+  const result = await handleToolCall('test', null, 'unregistered_tool', {});
+  assert.equal(result.status, 'failed');
+  assert(Object.values(GOOGLE_SCOPES).every(scope => scope.endsWith('.readonly')));
+  const source = readFileSync('src/agent/loop.ts', 'utf8');
+  assert(source.includes("anthropicMessages.push({ role: 'user', content })"));
+  assert(source.includes('ORDER BY created_at DESC'));
+  assert(source.includes('WHERE id = $1 AND user_id = $2'));
+  let status = 0;
+  const reply: any = { status(code: number) { status = code; return this; }, send() { return this; } };
+  await authenticate({ headers: {}, log: { warn() {} } } as any, reply);
+  assert.equal(status, 401, 'No silent dev login outside demo mode');
+  const prior = process.env.OPENAI_API_KEY;
+  delete process.env.OPENAI_API_KEY;
+  await assert.rejects(generateEmbedding('Remember this'), /provider unavailable/);
+  if (prior) process.env.OPENAI_API_KEY = prior;
+  await pool.end();
+  console.log('Foundation boundary checks passed');
+})().catch(async err => { console.error(err); await pool.end(); process.exit(1); });
