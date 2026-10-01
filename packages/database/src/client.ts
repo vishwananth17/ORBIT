@@ -2,6 +2,7 @@
 // Orbit Database Client with Zero-Docker In-Memory Fallback
 // ============================================================================
 
+import * as fs from 'fs';
 import { Pool, PoolConfig, QueryResult, QueryResultRow } from 'pg';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -16,7 +17,9 @@ const config: PoolConfig = {
     host: process.env.PGHOST, port: Number(process.env.PGPORT || '5432'),
     user: process.env.PGUSER, password: process.env.PGPASSWORD,
     database: process.env.PGDATABASE || 'postgres',
-    ssl: { rejectUnauthorized: true },
+    ssl: { rejectUnauthorized: true,
+      ...(process.env.PGSSLROOTCERT ? { ca: fs.readFileSync(process.env.PGSSLROOTCERT, 'utf8') } : {}),
+    },
   } : { connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/orbit_db' }),
   max: 20,
   idleTimeoutMillis: 30000,
