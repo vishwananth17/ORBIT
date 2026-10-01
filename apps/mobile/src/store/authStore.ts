@@ -90,9 +90,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
       };
 
-      // Ensure initialization never hangs the UI
-      const timeout = new Promise<void>((resolve) => setTimeout(resolve, 1500));
-      await Promise.race([doInit(), timeout]);
+      // Do not show authenticated routes before stored session validation finishes.
+      await doInit();
       set((state) => ({ isLoading: false }));
     } catch {
       set({ isLoading: false });
