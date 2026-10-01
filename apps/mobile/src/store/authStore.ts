@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getAuthClient, getValidAccessToken } from '../services/authSession';
 import { create } from 'zustand';
 import { Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -56,7 +56,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         // Read stored session safely across web and native
-        const storedToken = await safeStorage.getItem(SECURE_TOKEN_KEY);
+        const legacyToken = await safeStorage.getItem(SECURE_TOKEN_KEY);
+        let storedToken: string | null = null;
+        try { storedToken = await getValidAccessToken(legacyToken); } catch {
+          await safeStorage.deleteItem(SECURE_TOKEN_KEY);
+          await safeStorage.deleteItem(SECURE_USER_KEY);
+          set({ error: 'Your Orbit session expired. Please sign in again.' });
+        }
         const storedUser = await safeStorage.getItem(SECURE_USER_KEY);
 
         if (storedToken && storedUser) {
@@ -99,7 +105,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
       const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
       if (!url || !key) throw new Error('Sign-in is not configured. Ask the app owner to configure Supabase.');
-      const auth = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+      const auth = getAuthClient();
       const { data, error } = await auth.auth.signInWithPassword({ email, password });
       if (error || !data.session || !data.user) throw new Error(error?.message || 'Sign-in failed');
       const mockUser: User = {
@@ -131,7 +137,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
       const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
       if (!url || !key) throw new Error('Sign-up is not configured.');
-      const auth = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+      const auth = getAuthClient();
       const { data, error } = await auth.auth.signUp({ email, password });
       if (error || !data.user) throw new Error(error?.message || 'Sign-up failed');
       set({ isLoading: false });
@@ -174,6 +180,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    try { await getAuthClient().auth.signOut(); } catch { /* clear local state regardless */ }
     await safeStorage.deleteItem(SECURE_TOKEN_KEY);
     await safeStorage.deleteItem(SECURE_USER_KEY);
     set({
