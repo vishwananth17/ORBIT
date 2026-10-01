@@ -1,3 +1,4 @@
+import { Card } from '../../components/common/Card';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
 import { ShieldCheck, Brain, ArrowRight, Sparkles } from 'lucide-react-native';
@@ -15,24 +16,24 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const slides = [
     {
       icon: ShieldCheck,
-      badge: 'Zero-Leakage Privacy',
-      title: 'Your Thoughts.\nStrictly Confidential.',
+      badge: 'Your personal workspace',
+      title: 'Less to carry.\nMore room to think.',
       description:
-        'Orbit is engineered with end-to-end encrypted storage, PostgreSQL Row-Level Security, and on-device biometric locks. Your data never trains public models.',
+        'Bring your plans, notes and conversations together. Sign in to your own account before connecting private information.',
     },
     {
       icon: Brain,
-      badge: 'Semantic Vector Memory',
-      title: 'An Assistant That\nTruly Remembers.',
+      badge: 'Memory you can review',
+      title: 'Keep the details.\nSee the bigger picture.',
       description:
-        'Orbit automatically extracts facts, preferences, and project goals from your conversations, retrieving contextual memories right when you need them.',
+        'Review and edit saved preferences and project notes. Chat and memory need configured providers; they are not active in this preview.',
     },
     {
       icon: Sparkles,
-      badge: 'Two-Phase Agency',
-      title: 'Proactive Power.\nZero Surprises.',
+      badge: 'Connected, with care',
+      title: 'Your inbox.\nYour day. Your call.',
       description:
-        'From morning briefings to drafting emails and booking calendar slots: every consequential action requires your explicit, one-tap approval.',
+        'Google read access is ready for setup. Email sending and calendar changes remain off until the next tested rollout.',
     },
   ];
 
@@ -59,7 +60,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <Card style={styles.content}>
         <View style={[styles.iconContainer, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
           <View style={[styles.iconInner, { backgroundColor: colors.accentSubtle }]}>
             <Icon size={36} color={colors.accent} />
@@ -72,7 +73,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
         <Text style={[styles.title, { color: colors.textPrimary }]}>{slide.title}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>{slide.description}</Text>
-      </View>
+      </Card>
 
       <View style={styles.footer}>
         {/* Pagination Dots */}
@@ -134,7 +135,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   content: {
-    paddingHorizontal: spacing.xxxl,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.xxxl,
+    marginHorizontal: spacing.xxl,
+    maxWidth: 540,
+    alignSelf: 'center',
     alignItems: 'center',
   },
   iconContainer: {
