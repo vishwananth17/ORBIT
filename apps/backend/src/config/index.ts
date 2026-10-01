@@ -8,6 +8,7 @@ dotenv.config();
 
 const envSchema = z.object({
   DEMO_MODE: z.enum(['true', 'false']).default('false').transform(v => v === 'true'),
+  PROACTIVE_ENABLED: z.enum(['true', 'false']).default('false').transform(v => v === 'true'),
   PORT: z.coerce.number().default(4000),
   HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
