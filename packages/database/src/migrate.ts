@@ -11,9 +11,12 @@ export async function runMigrations() {
     process.exit(1);
   }
 
+  await pool.query('CREATE TABLE IF NOT EXISTS public.orbit_schema_migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())');
   const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
 
   for (const file of files) {
+    const applied = await pool.query('SELECT name FROM public.orbit_schema_migrations WHERE name = $1', [file]);
+    if (applied.rows.length) continue;
     console.log(`[Orbit Database] Applying migration: ${file}`);
     const filePath = path.join(migrationsDir, file);
     const sql = fs.readFileSync(filePath, 'utf-8');
@@ -22,6 +25,7 @@ export async function runMigrations() {
     try {
       await client.query('BEGIN');
       await client.query(sql);
+      await client.query('INSERT INTO public.orbit_schema_migrations (name) VALUES ($1)', [file]);
       await client.query('COMMIT');
       console.log(`[Orbit Database] Successfully applied: ${file}`);
     } catch (err: any) {
