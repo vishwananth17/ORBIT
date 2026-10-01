@@ -7,6 +7,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 dotenv.config();
 
 const envSchema = z.object({
+  DEMO_MODE: z.enum(['true', 'false']).default('false').transform(v => v === 'true'),
   PORT: z.coerce.number().default(4000),
   HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -31,4 +32,12 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+if (parsed.data.NODE_ENV === 'production' && parsed.data.DEMO_MODE) {
+  throw new Error('DEMO_MODE is forbidden in production');
+}
+if (parsed.data.NODE_ENV === 'production' &&
+    (parsed.data.SUPABASE_URL.includes('example.') ||
+     parsed.data.TOKEN_ENCRYPTION_KEY === '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef')) {
+  throw new Error('Production requires real Supabase configuration and a unique encryption key');
+}
 export const config = parsed.data;
