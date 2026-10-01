@@ -43,5 +43,5 @@ export async function runMigrations() {
 if (require.main === module) {
   runMigrations()
     .then(() => process.exit(0))
-    .catch(() => process.exit(1));
+    .catch((err: any) => { console.error('[Orbit Database] Migration failed:', err.message); process.exit(1); });
 }
