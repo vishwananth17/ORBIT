@@ -12,7 +12,12 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 const config: PoolConfig = {
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/orbit_db',
+  ...(process.env.PGHOST ? {
+    host: process.env.PGHOST, port: Number(process.env.PGPORT || '5432'),
+    user: process.env.PGUSER, password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE || 'postgres',
+    ssl: { rejectUnauthorized: true },
+  } : { connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/orbit_db' }),
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000, // Fast 2s timeout for seamless local fallback
