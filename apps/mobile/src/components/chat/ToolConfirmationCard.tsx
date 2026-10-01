@@ -128,9 +128,13 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
                 <Text style={[styles.paramLabel, { color: colors.textSecondary }]}>Subject:</Text>
                 <Text style={[styles.paramValue, { color: colors.textPrimary }]}>{String(payload.subject || '')}</Text>
               </View>
+              {Array.isArray(payload.cc) && payload.cc.length > 0 && (
+                <View style={styles.paramRow}><Text style={[styles.paramLabel, { color: colors.textSecondary }]}>CC:</Text>
+                <Text style={[styles.paramValue, { color: colors.textPrimary }]}>{payload.cc.join(', ')}</Text></View>
+              )}
               <View style={[styles.paramRow, { borderBottomWidth: 0 }]}>
                 <Text style={[styles.paramLabel, { color: colors.textSecondary }]}>Message:</Text>
-                <Text style={[styles.paramValue, { color: colors.textPrimary }]} numberOfLines={3}>
+                <Text style={[styles.paramValue, { color: colors.textPrimary }]}>
                   {String(payload.body || '')}
                 </Text>
               </View>
