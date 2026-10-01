@@ -40,27 +40,8 @@ export const IntegrationsScreen: React.FC<IntegrationsScreenProps> = ({ onBack }
       const data = await apiClient.listIntegrations(token);
       setIntegrations(data);
     } catch {
-      // Fallback defaults
-      setIntegrations([
-        {
-          provider: 'google_calendar',
-          name: 'Google Calendar',
-          description: 'Read upcoming events, schedule meetings, and protect focus time.',
-          is_connected: true,
-        },
-        {
-          provider: 'gmail',
-          name: 'Gmail',
-          description: 'Search messages, draft updates, and prepare outgoing emails.',
-          is_connected: true,
-        },
-        {
-          provider: 'google_drive',
-          name: 'Google Drive',
-          description: 'Search documents, project briefs, and notes.',
-          is_connected: false,
-        },
-      ]);
+      setIntegrations([]);
+      Alert.alert('Unavailable', 'Could not verify connected accounts. Check your backend connection.');
     } finally {
       setLoading(false);
     }
@@ -130,11 +111,11 @@ export const IntegrationsScreen: React.FC<IntegrationsScreenProps> = ({ onBack }
           <ShieldCheck size={20} color={colors.accent} />
           <View style={styles.securityTextWrap}>
             <Text style={[styles.securityTitle, { color: colors.textPrimary }]}>
-              Hardware-Enclave Token Security
+              Google read access
             </Text>
             <Text style={[styles.securityDescription, { color: colors.textSecondary }]}>
-              All OAuth access and refresh tokens are encrypted at rest with AES-256-GCM. Orbit never
-              dispatches write actions without your explicit in-chat approval.
+              OAuth tokens are encrypted on the server. This rollout reads Gmail and Calendar only.
+              Sending emails and changing events remain disabled.
             </Text>
           </View>
         </View>
