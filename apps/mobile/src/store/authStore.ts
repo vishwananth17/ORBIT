@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js';
 import { create } from 'zustand';
 import { Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -91,20 +92,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  loginWithEmail: async (email: string, _password: string) => {
+  loginWithEmail: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
+      const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+      if (!url || !key) throw new Error('Sign-in is not configured. Ask the app owner to configure Supabase.');
+      const auth = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data, error } = await auth.auth.signInWithPassword({ email, password });
+      if (error || !data.session || !data.user) throw new Error(error?.message || 'Sign-in failed');
       const mockUser: User = {
-        id: '00000000-0000-0000-0000-000000000001',
-        email,
-        full_name: email.split('@')[0],
-        avatar_url: null,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        locale: 'en-US',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        id: data.user.id, email: data.user.email || email,
+        full_name: data.user.user_metadata?.full_name || email.split('@')[0], avatar_url: null,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC', locale: 'en-US',
+        created_at: data.user.created_at, updated_at: new Date().toISOString(),
       };
-      const token = 'dev-token';
+      const token = data.session.access_token;
 
       await safeStorage.setItem(SECURE_TOKEN_KEY, token);
       await safeStorage.setItem(SECURE_USER_KEY, JSON.stringify(mockUser));
@@ -122,6 +125,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   loginAsGuest: async () => {
+    if (process.env.EXPO_PUBLIC_DEMO_MODE !== 'true') {
+      set({ error: 'Guest access is available only in explicitly enabled demo mode.', isLoading: false });
+      return;
+    }
     set({ isLoading: true, error: null });
     const guestUser: User = {
       id: '00000000-0000-0000-0000-000000000001',
