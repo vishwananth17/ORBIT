@@ -1,3 +1,4 @@
+import { DesignPreviewScreen } from './DesignPreviewScreen';
 import { Card } from '../../components/common/Card';
 import React, { useState } from 'react';
 import {
@@ -29,6 +30,7 @@ export const LoginScreen: React.FC = () => {
     clearError,
   } = useAuthStore();
 
+  const [showPreview, setShowPreview] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -36,6 +38,8 @@ export const LoginScreen: React.FC = () => {
     if (!email.trim() || !password.trim()) return;
     await loginWithEmail(email.trim(), password.trim());
   };
+
+  if (showPreview) return <DesignPreviewScreen onBack={() => setShowPreview(false)} />;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -128,6 +132,7 @@ export const LoginScreen: React.FC = () => {
               </TouchableOpacity>
             )}
 
+            <TouchableOpacity onPress={() => setShowPreview(true)} style={[styles.guestButton, { backgroundColor: colors.surfaceSecondary }]}><Text style={[styles.guestButtonText, { color: colors.textSecondary }]}>Explore design preview</Text></TouchableOpacity>
             {/* Quick Demo Access */}
             {process.env.EXPO_PUBLIC_DEMO_MODE === 'true' && <TouchableOpacity
               onPress={loginAsGuest}
