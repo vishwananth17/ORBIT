@@ -42,6 +42,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     }
   }
 
+  if (!config.DEMO_MODE && config.NODE_ENV !== 'test') {
+    throw new Error('Semantic memory provider unavailable. No fake embedding was stored.');
+  }
   // 2. Development/Mock: Deterministic unit vector generation
   return generateDeterministicEmbedding(cleanText);
 }
