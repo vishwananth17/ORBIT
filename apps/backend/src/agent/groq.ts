@@ -50,7 +50,7 @@ export async function groqTurn(input: {
   }
   const response = await fetcher('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST', headers: { Authorization: `Bearer ${config.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body), signal: input.signal || AbortSignal.timeout(60000),
+    body: JSON.stringify(body), signal: input.signal ? AbortSignal.any([input.signal, AbortSignal.timeout(60000)]) : AbortSignal.timeout(60000),
   });
   if (!response.ok) {
     if (response.status === 429) throw new GroqProviderError('Groq Free reached its usage limit. Wait before trying again. No automatic retry or paid upgrade occurred; earlier tool results, if any, still apply.', 'PROVIDER_RATE_LIMIT');
