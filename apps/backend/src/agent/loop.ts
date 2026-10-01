@@ -195,16 +195,28 @@ export async function executeChatStream(params: StreamChatParams) {
     } else {
       // Intelligent fallback simulator for instant local testing without API key setup
       const lower = content.toLowerCase();
-      let triggeredConfirmation = false;
+      // Check if user requested to send email / mail
+      const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+      const emailMatch = content.match(emailRegex);
+      const isEmailIntent = (lower.includes('email') || lower.includes('mail')) && (lower.includes('send') || lower.includes('draft') || !!emailMatch);
 
-      if (lower.includes('email') && (lower.includes('send') || lower.includes('draft'))) {
+      if (isEmailIntent) {
+        const toEmail = emailMatch ? emailMatch[1] : 'bsvishwananth@gmail.com';
+        let emailBody = 'Hello from Vish via Orbit.';
+        const msgMatch = content.match(/(?:msg|message|saying|text|content|body)\s+[:\s]?["']?([^"'\n]+)["']?/i);
+        if (msgMatch && msgMatch[1]) {
+          emailBody = msgMatch[1].trim();
+        } else {
+          emailBody = 'i love you';
+        }
+
         const actionResult = await handleToolCall(userId, convId, TOOL_NAMES.SEND_EMAIL, {
-          to: 'sarah@example.com',
-          subject: 'Project Sync & Orbit Launch',
-          body: 'Hi Sarah, let us review the Orbit personal agent progress tomorrow afternoon.',
+          to: toEmail,
+          subject: 'Personal Note via Orbit',
+          body: emailBody,
         });
 
-        const simulationNotice = "I have drafted the email for you.\n\n⚠️ **Action Confirmation Required:** As per our privacy & safety guardrails, please review the confirmation card below before this message is dispatched.";
+        const simulationNotice = `I have drafted the email to **${toEmail}** with your message.\n\n⚠️ **Action Confirmation Required:** As per our Zero-Leakage Privacy & Safety guardrails, consequential write actions require your explicit, one-tap approval before they are dispatched.`;
         fullResponseText += simulationNotice;
         sendEvent({ type: 'token', text: simulationNotice });
 
@@ -214,7 +226,7 @@ export async function executeChatStream(params: StreamChatParams) {
           tool_name: TOOL_NAMES.SEND_EMAIL,
           permission_level: 'write',
           action_payload: actionResult.action_payload!,
-          description: actionResult.description!,
+          description: `Send email to "${toEmail}" regarding "Personal Note via Orbit" with body: "${emailBody}"`,
         });
         triggeredConfirmation = true;
       } else if (lower.includes('schedule') || lower.includes('meeting') || lower.includes('calendar')) {

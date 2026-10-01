@@ -211,7 +211,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
   confirmAction: async (actionId: string, approved: boolean) => {
     try {
       const token = useAuthStore.getState().token;
-      const res = await apiClient.confirmAction(actionId, approved, undefined, token);
+      const targetAction = get().actions.find((a) => a.actionId === actionId);
+      const res = await apiClient.confirmAction(actionId, approved, targetAction?.actionPayload, token);
+
+      // On approval for email actions, trigger mailto client on web as direct dispatch fallback
+      if (approved && targetAction && targetAction.toolName === 'send_email' && typeof window !== 'undefined') {
+        const payload = (targetAction.actionPayload || {}) as Record<string, any>;
+        const to = payload.to || 'bsvishwananth@gmail.com';
+        const subject = encodeURIComponent(payload.subject || 'Personal Note via Orbit');
+        const body = encodeURIComponent(payload.body || 'i love you');
+        try {
+          window.open(`mailto:${to}?subject=${subject}&body=${body}`, '_blank');
+        } catch {}
+      }
+
       set((state) => ({
         actions: state.actions.map((a) =>
           a.actionId === actionId

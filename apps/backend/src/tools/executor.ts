@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db';
 import { ActionLog, TOOL_NAMES, Task } from '@orbit/shared';
 import { doesToolRequireConfirmation, TOOL_REGISTRY } from './registry';
+import { sendRealEmail } from '../services/emailService';
 
 export interface ToolExecutionResponse {
   status: 'executed' | 'confirmation_required' | 'failed';
@@ -211,12 +212,19 @@ export async function confirmAction(
 
   try {
     if (action.tool_name === TOOL_NAMES.SEND_EMAIL) {
+      const emailResult = await sendRealEmail({
+        to: payload.to,
+        subject: payload.subject || 'Personal Note',
+        body: payload.body || '',
+      });
       executionResult = {
         sent: true,
         to: payload.to,
         subject: payload.subject,
-        sent_at: new Date().toISOString(),
-        receipt_id: `gmail-receipt-${Date.now()}`,
+        sent_at: emailResult.sent_at,
+        receipt_id: emailResult.messageId,
+        provider: emailResult.provider,
+        previewUrl: emailResult.previewUrl,
       };
     } else if (action.tool_name === TOOL_NAMES.CREATE_CALENDAR_EVENT) {
       executionResult = {
