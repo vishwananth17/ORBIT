@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { groqTurn, GroqProviderError } from './groq';
+import { startEventStream } from './sse';
 import { FastifyReply } from 'fastify';
 import { config } from '../config';
 import { query } from '../db';
@@ -40,11 +41,7 @@ export async function executeChatStream(params: StreamChatParams) {
   }
 
   // 1. Setup SSE headers
-  reply.raw.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  reply.raw.setHeader('Cache-Control', 'no-cache, no-transform');
-  reply.raw.setHeader('Connection', 'keep-alive');
-  reply.raw.setHeader('X-Accel-Buffering', 'no');
-  reply.raw.flushHeaders();
+  startEventStream(reply);
 
   const sendEvent = (event: StreamEvent) => {
     if (!reply.raw.writableEnded) {
