@@ -1,3 +1,5 @@
+import { LineIcon } from '../../components/common/LineIcon';
+import { X, Sparkles } from 'lucide-react-native';
 // ============================================================================
 // Daily Journal & Insights Analytics Screen (Phase 7)
 // ============================================================================
@@ -22,11 +24,11 @@ interface Props {
 }
 
 const MOODS = [
-  { score: 1, emoji: '🥱', label: 'Drained' },
-  { score: 2, emoji: '🌧️', label: 'Tense' },
-  { score: 3, emoji: '⚖️', label: 'Balanced' },
-  { score: 4, emoji: '🌿', label: 'Energized' },
-  { score: 5, emoji: '🚀', label: 'Peak Flow' },
+  { score: 1, icon: 'moon', label: 'Drained' },
+  { score: 2, icon: 'rain', label: 'Tense' },
+  { score: 3, icon: 'scale', label: 'Balanced' },
+  { score: 4, icon: 'leaf', label: 'Energized' },
+  { score: 5, icon: 'rocket', label: 'Peak Flow' },
 ];
 
 const PRESET_TAGS = [
@@ -180,7 +182,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                     ]}
                     onPress={() => setMoodScore(m.score)}
                   >
-                    <Text style={styles.moodEmoji}>{m.emoji}</Text>
+                    <LineIcon name={m.icon} color={isSelected ? colors.accent : colors.textSecondary} />
                     <Text style={[styles.moodLabel, { color: isSelected ? colors.accent : colors.textSecondary }]}>
                       {m.label}
                     </Text>
@@ -192,7 +194,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
             {/* Energy & Productivity Matrix */}
             <View style={styles.matrixRow}>
               <View style={[styles.matrixCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[styles.matrixLabel, { color: colors.textSecondary }]}>ENERGY (⚡)</Text>
+                <Text style={[styles.matrixLabel, { color: colors.textSecondary }]}>ENERGY</Text>
                 <View style={styles.ratingRow}>
                   {[1, 2, 3, 4, 5].map((lvl) => (
                     <TouchableOpacity
@@ -299,7 +301,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                 <Text style={[styles.takeawayBullet, { color: colors.accent }]}>•</Text>
                 <Text style={[styles.takeawayText, { color: colors.textPrimary }]}>{item}</Text>
                 <TouchableOpacity onPress={() => removeTakeaway(idx)}>
-                  <Text style={{ color: colors.textSecondary, fontSize: 16 }}>✕</Text>
+                  <X size={18} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -330,7 +332,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                 ]}
               >
                 <View style={styles.aiCardHeader}>
-                  <Text style={styles.aiSparkle}>✨</Text>
+                  <Sparkles size={20} color={colors.accent} strokeWidth={1.6} />
                   <Text style={[styles.aiCardTitle, { color: colors.accent }]}>Orbit Mindful Reflection</Text>
                 </View>
                 <Text style={[styles.aiReflectionText, { color: colors.textPrimary }]}>
@@ -342,7 +344,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                     style={[styles.discussBtn, { borderColor: colors.accent }]}
                     onPress={() => onOpenChatWithReflection(todayEntry.ai_reflection!)}
                   >
-                    <Text style={[styles.discussText, { color: colors.accent }]}>💬 Discuss with Orbit Agent</Text>
+                    <Text style={[styles.discussText, { color: colors.accent }]}>Discuss with Orbit Agent</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -449,7 +451,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                         {entry.entry_date}
                       </Text>
                       <Text style={styles.historyMood}>
-                        {MOODS.find((m) => m.score === entry.mood_score)?.emoji || '⚖️'} {entry.mood_score}/5
+                        {entry.mood_score}/5
                       </Text>
                     </View>
                     <Text style={[styles.historySummary, { color: colors.textSecondary }]} numberOfLines={3}>
