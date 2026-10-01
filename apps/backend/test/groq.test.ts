@@ -39,6 +39,8 @@ async function main() {
   await failure(async () => new Response('{}', { status: 429 }), 'PROVIDER_RATE_LIMIT');
   await failure(async () => new Response('data: {"choices":[{"delta":{"content":"partial"}}]}\n'), 'INCOMPLETE_RESPONSE');
   await failure(async () => new Response('data: {"choices":[{"delta":{},"finish_reason":"length"}]}\ndata: [DONE]\n'), 'INCOMPLETE_RESPONSE');
+  await failure(async () => new Response('data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"t2","function":{"name":"not_allowed","arguments":"{}"}}]},"finish_reason":"tool_calls"}]}\ndata: [DONE]\n'), 'INVALID_TOOL_CALL');
+  await failure(async () => new Response('data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"t2","function":{"name":"test_read","arguments":"bad"}}]},"finish_reason":"tool_calls"}]}\ndata: [DONE]\n'), 'INVALID_TOOL_CALL');
   config.GROQ_ZDR_VERIFIED = false;
   await failure(streamFetch, 'PROVIDER_NOT_READY');
   assert.equal(requests, 1, 'No network call without ZDR verification');
