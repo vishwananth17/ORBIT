@@ -27,6 +27,7 @@ export const TOOL_NAMES = {
 
   // Email
   SEARCH_EMAILS: 'search_emails',
+  READ_EMAIL: 'read_email',
   DRAFT_EMAIL: 'draft_email',
   SEND_EMAIL: 'send_email',
 
