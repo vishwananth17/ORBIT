@@ -1,4 +1,4 @@
-import { searchGoogleEmails, readGoogleCalendar } from '../integrations/google';
+import { searchGoogleEmails, readGoogleEmail, readGoogleCalendar } from '../integrations/google';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db';
 import { ActionLog, TOOL_NAMES, Task } from '@orbit/shared';
@@ -135,6 +135,8 @@ async function executeDirectTool(userId: string, toolName: string, args: Record<
       return readGoogleCalendar(userId, args);
     case TOOL_NAMES.SEARCH_EMAILS:
       return searchGoogleEmails(userId, args);
+    case TOOL_NAMES.READ_EMAIL:
+      return readGoogleEmail(userId, args);
 
     default:
       throw new Error('Tool is not implemented');
