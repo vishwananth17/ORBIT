@@ -98,6 +98,43 @@ export async function searchGoogleEmails(userId: string, args: Record<string, un
   return { messages, source: 'gmail', next_page_token: page.nextPageToken };
 }
 
+const MAX_EMAIL_TEXT = 8000;
+
+function decodePart(data?: string): string {
+  return data ? Buffer.from(data, 'base64url').toString('utf8') : '';
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// Prefers text/plain, falls back to stripped text/html. Attachments are never fetched.
+export function extractEmailText(payload: any): string {
+  const plain: string[] = [];
+  const html: string[] = [];
+  const walk = (part: any) => {
+    if (!part) return;
+    if (part.filename) return;
+    if (part.mimeType === 'text/plain') plain.push(decodePart(part.body?.data));
+    else if (part.mimeType === 'text/html') html.push(decodePart(part.body?.data));
+    for (const child of part.parts || []) walk(child);
+  };
+  walk(payload);
+  const text = plain.join('\n').trim() || stripHtml(html.join('\n'));
+  return text.length > MAX_EMAIL_TEXT ? text.slice(0, MAX_EMAIL_TEXT) + '\n[truncated]' : text;
+}
+
+export async function readGoogleEmail(userId: string, args: Record<string, unknown>) {
+  const id = String(args.message_id || '');
+  if (!/^[A-Za-z0-9_-]{6,64}$/.test(id)) throw new Error('A valid message_id from search_emails is required');
+  const msg = await googleRead(userId, 'gmail', `/gmail/v1/users/me/messages/${encodeURIComponent(id)}?format=full`);
+  const header = (name: string) => msg.payload?.headers?.find((h: any) => h.name.toLowerCase() === name)?.value || '';
+  return { id: msg.id, thread_id: msg.threadId, from: header('from'), to: header('to'), subject: header('subject'),
+    date: header('date'), text: extractEmailText(msg.payload), source: 'gmail', untrusted_content: true };
+}
+
 export async function readGoogleCalendar(userId: string, args: Record<string, unknown>) {
   const params = new URLSearchParams({ timeMin: String(args.time_min || new Date().toISOString()),
     singleEvents: 'true', orderBy: 'startTime', maxResults: '50' });
