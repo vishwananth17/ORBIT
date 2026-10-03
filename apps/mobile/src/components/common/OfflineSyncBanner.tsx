@@ -33,15 +33,15 @@ export function OfflineSyncBanner() {
   }
 
   return (
-    <View style={[styles.banner, { backgroundColor: '#F59E0B22', borderColor: '#F59E0B' }]}>
+    <View style={[styles.banner, { backgroundColor: colors.surfaceSecondary, borderColor: colors.border }]}>
       <WifiOff size={16} color={colors.warning} strokeWidth={1.6} />
       <View style={{ flex: 1, marginLeft: 8 }}>
-        <Text style={[styles.text, { color: '#F59E0B' }]}>
+        <Text style={[styles.text, { color: colors.textSecondary }]}>
           Offline Mode • {pendingQueue.length > 0 ? `${pendingQueue.length} changes queued` : 'Local cache active'}
         </Text>
       </View>
       <TouchableOpacity onPress={handleRetry} style={styles.retryBtn}>
-        <Text style={[styles.retryText, { color: '#F59E0B' }]}>Retry</Text>
+        <Text style={[styles.retryText, { color: colors.textSecondary }]}>Retry</Text>
       </TouchableOpacity>
     </View>
   );
