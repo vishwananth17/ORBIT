@@ -1,5 +1,5 @@
 import { LineIcon } from '../../components/common/LineIcon';
-import { X, Sparkles, Check, Star } from 'lucide-react-native';
+import { ArrowLeft, X, Sparkles, Check, Star } from 'lucide-react-native';
 // ============================================================================
 // Daily Journal & Insights Analytics Screen (Phase 7)
 // ============================================================================
@@ -132,7 +132,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-          <Text style={[styles.backText, { color: colors.textSecondary }]}>‹ Back</Text>
+          <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={1.5} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Daily Reflection & Mood</Text>
         <View style={{ width: 44 }} />
