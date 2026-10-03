@@ -230,7 +230,7 @@ export default function App() {
       <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#000000' }}>
         <ThemeProvider>
           <View style={styles.stage}>
-            <View style={[styles.column, fullWidth && { maxWidth: undefined, borderLeftWidth: 0, borderRightWidth: 0 }]}>
+            <View style={[styles.column, fullWidth && { maxWidth: '100%', borderLeftWidth: 0, borderRightWidth: 0 }]}>
               <MainAppNavigator />
             </View>
           </View>
