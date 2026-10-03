@@ -1,6 +1,9 @@
 import React, { useEffect, useState, Component, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { useWindowDimensions, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { Sun, Brain, Bot, BookOpen, Settings } from 'lucide-react-native';
+import { useChatStore } from './src/store/chatStore';
+import { SidebarPanel, SidebarNavItem } from './src/components/chat/SidebarPanel';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { useAuthStore } from './src/store/authStore';
@@ -30,21 +33,23 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, backgroundColor: '#0B0F19', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#00F0FF', fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>Orbit UI Recovered</Text>
-          <Text style={{ color: '#EF4444', fontSize: 14, textAlign: 'center', marginBottom: 12, fontWeight: '600' }}>
-            {this.state.error?.message}
-          </Text>
-          {this.state.stack ? (
-            <View style={{ backgroundColor: '#131A2B', padding: 12, borderRadius: 8, maxWidth: '90%', marginBottom: 16 }}>
-              <Text style={{ color: '#94A3B8', fontSize: 11, fontFamily: 'monospace' }}>
-                {this.state.stack}
-              </Text>
-            </View>
-          ) : null}
-          <TouchableOpacity onPress={() => this.setState({ hasError: false, error: null, stack: null })} style={{ backgroundColor: '#00F0FF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 }}>
-            <Text style={{ color: '#0B0F19', fontWeight: 'bold' }}>Reload Interface</Text>
-          </TouchableOpacity>
+        <View style={{ flex: 1, backgroundColor: '#000000', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '100%', maxWidth: 420, backgroundColor: '#0D0D0D', borderColor: '#2A2A2A', borderWidth: 1, borderRadius: 16, padding: 24 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '600', marginBottom: 8 }}>Something went wrong</Text>
+            <Text style={{ color: '#A3A3A3', fontSize: 15, lineHeight: 22, marginBottom: 20 }}>
+              Orbit hit an error and stopped this screen. Your data is not affected. Try again.
+            </Text>
+            {__DEV__ && this.state.error?.message ? (
+              <Text style={{ color: '#737373', fontSize: 12, marginBottom: 16 }}>{this.state.error.message}</Text>
+            ) : null}
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => this.setState({ hasError: false, error: null, stack: null })}
+              style={{ backgroundColor: '#FFFFFF', height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Text style={{ color: '#000000', fontWeight: '600', fontSize: 15 }}>Try again</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       );
     }
@@ -56,9 +61,12 @@ type AppScreen = 'today' | 'chat' | 'memory' | 'settings' | 'integrations' | 'no
 
 function MainAppNavigator() {
   const { colors, isDark } = useTheme();
+  const { width } = useWindowDimensions();
+  const wide = Platform.OS === 'web' && width >= 900;
+  const chat = useChatStore();
   const { isAuthenticated, isBiometricLocked, isLoading, initialize } = useAuthStore();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('today');
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('chat');
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
 
   useEffect(() => {
@@ -105,6 +113,13 @@ function MainAppNavigator() {
   }
 
   // 3. Authenticated App Flow
+  const navItems: SidebarNavItem[] = [
+    { key: 'today', label: 'Today', icon: Sun, onPress: () => setCurrentScreen('today'), active: currentScreen === 'today' },
+    { key: 'memory', label: 'Memory', icon: Brain, onPress: () => setCurrentScreen('memory'), active: currentScreen === 'memory' },
+    { key: 'agents', label: 'Agents', icon: Bot, onPress: () => setCurrentScreen('agents'), active: currentScreen === 'agents' },
+    { key: 'journal', label: 'Journal', icon: BookOpen, onPress: () => setCurrentScreen('journal'), active: currentScreen === 'journal' },
+    { key: 'settings', label: 'Settings', icon: Settings, onPress: () => setCurrentScreen('settings'), active: currentScreen === 'settings' || currentScreen === 'integrations' || currentScreen === 'notifications' },
+  ];
   const renderScreen = () => {
     switch (currentScreen) {
       case 'today':
@@ -161,6 +176,8 @@ function MainAppNavigator() {
             onOpenToday={() => setCurrentScreen('today')}
             onOpenAgents={() => setCurrentScreen('agents')}
             initialPrompt={initialChatPrompt}
+            navItems={navItems}
+            embedded={wide}
           />
         );
     }
@@ -170,7 +187,31 @@ function MainAppNavigator() {
     <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: colors.background }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <OfflineSyncBanner />
-      {renderScreen()}
+      {wide ? (
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <View style={{ width: 272 }}>
+            <SidebarPanel
+              conversations={chat.conversations}
+              activeConversationId={chat.activeConversationId}
+              onSelectConversation={(id) => {
+                chat.selectConversation(id);
+                setCurrentScreen('chat');
+              }}
+              onNewChat={() => {
+                chat.newChat();
+                setCurrentScreen('chat');
+              }}
+              onDeleteConversation={(id) => chat.deleteConversation(id)}
+              navItems={navItems}
+            />
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <View style={{ flex: 1, width: '100%', maxWidth: 820 }}>{renderScreen()}</View>
+          </View>
+        </View>
+      ) : (
+        renderScreen()
+      )}
     </View>
   );
 }
@@ -181,12 +222,17 @@ const initialMetrics = {
 };
 
 export default function App() {
+  const { width } = useWindowDimensions();
+  const authed = useAuthStore((st) => st.isAuthenticated);
+  const fullWidth = Platform.OS === 'web' && width >= 900 && authed;
   return (
     <ErrorBoundary>
-      <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
+      <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#000000' }}>
         <ThemeProvider>
-          <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
-            <MainAppNavigator />
+          <View style={styles.stage}>
+            <View style={[styles.column, fullWidth && { maxWidth: '100%', borderLeftWidth: 0, borderRightWidth: 0 }]}>
+              <MainAppNavigator />
+            </View>
           </View>
         </ThemeProvider>
       </SafeAreaProvider>
@@ -195,6 +241,20 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  // On wide web screens the app renders as a centered phone-width column instead of stretching edge to edge.
+  stage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000000',
+    alignItems: 'center',
+  },
+  column: {
+    flex: 1,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 480 : undefined,
+    ...(Platform.OS === 'web' ? { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#1A1A1A' } : {}),
+  },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',

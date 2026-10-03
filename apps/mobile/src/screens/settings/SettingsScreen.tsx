@@ -118,10 +118,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </View>
           <View style={styles.profileInfo}>
             <Text style={[styles.profileName, { color: colors.textPrimary }]}>
-              {user?.full_name || 'Orbit User'}
+              {user?.full_name || user?.email?.split('@')[0] || 'Signed in'}
             </Text>
             <Text style={[styles.profileEmail, { color: colors.textSecondary }]}>
-              {user?.email || 'user@orbit.ai'}
+              {user?.email || ''}
             </Text>
           </View>
         </View>
@@ -181,6 +181,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               value={biometricsEnabled}
               onValueChange={setBiometricsEnabled}
               trackColor={{ false: colors.surfaceSecondary, true: colors.accent }}
+              thumbColor={colors.background}
+              {...({ activeThumbColor: colors.background } as any)}
             />
           </View>
 
@@ -200,6 +202,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               value={hapticsEnabled}
               onValueChange={setHapticsEnabled}
               trackColor={{ false: colors.surfaceSecondary, true: colors.accent }}
+              thumbColor={colors.background}
+              {...({ activeThumbColor: colors.background } as any)}
             />
           </View>
         </View>
@@ -249,7 +253,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
               <TouchableOpacity onPress={onOpenJournal} style={styles.rowItem}>
                 <View style={styles.rowLabelGroup}>
-                  <BookOpen size={18} color="#8B5CF6" />
+                  <BookOpen size={18} color={colors.textSecondary} />
                   <View>
                     <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Mindful Reflection & Mood</Text>
                     <Text style={[styles.rowDescription, { color: colors.textSecondary }]}>

@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { groqTurn, GroqProviderError } from './groq';
+import { startEventStream } from './sse';
 import { FastifyReply } from 'fastify';
 import { config } from '../config';
 import { query } from '../db';
@@ -31,12 +33,15 @@ export interface StreamChatParams {
 export async function executeChatStream(params: StreamChatParams) {
   const { userId, content, customAgentId, reply } = params;
 
+  // Reject foreign conversation IDs before reading or writing any messages.
+  if (params.conversationId) {
+    const owned = await query('SELECT id FROM conversations WHERE id = $1 AND user_id = $2',
+      [params.conversationId, userId]);
+    if (!owned.rows.length) return reply.status(404).send({ error: 'Conversation not found' });
+  }
+
   // 1. Setup SSE headers
-  reply.raw.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  reply.raw.setHeader('Cache-Control', 'no-cache, no-transform');
-  reply.raw.setHeader('Connection', 'keep-alive');
-  reply.raw.setHeader('X-Accel-Buffering', 'no');
-  reply.raw.flushHeaders();
+  startEventStream(reply);
 
   const sendEvent = (event: StreamEvent) => {
     if (!reply.raw.writableEnded) {
@@ -78,7 +83,7 @@ export async function executeChatStream(params: StreamChatParams) {
     await query(
       `INSERT INTO messages (id, conversation_id, user_id, role, content, model)
        VALUES ($1, $2, $3, 'user', $4, $5)`,
-      [userMsgId, convId, userId, content, config.ANTHROPIC_DEFAULT_MODEL]
+      [userMsgId, convId, userId, content, (config.CHAT_PROVIDER === 'groq' ? config.GROQ_MODEL : config.ANTHROPIC_DEFAULT_MODEL)]
     );
 
     const assistantMsgId = uuidv4();
@@ -96,7 +101,7 @@ export async function executeChatStream(params: StreamChatParams) {
       `SELECT role, content
        FROM messages
        WHERE conversation_id = $1 AND id != $2
-       ORDER BY created_at ASC
+       ORDER BY created_at DESC, id DESC
        LIMIT 15`,
       [convId, userMsgId]
     );
@@ -124,10 +129,11 @@ export async function executeChatStream(params: StreamChatParams) {
       }
     }
 
-    const anthropicMessages: Array<{ role: 'user' | 'assistant'; content: string }> = historyRes.rows.map((row) => ({
+    const anthropicMessages: Anthropic.MessageParam[] = historyRes.rows.reverse().map((row) => ({
       role: row.role === 'assistant' ? 'assistant' : 'user',
       content: row.content,
     }));
+    anthropicMessages.push({ role: 'user', content });
     // 7. Retrieve semantically relevant memories from vector vault
     const relevantMemories = await retrieveRelevantMemories(userId, content, { limit: 6 });
 
@@ -141,7 +147,7 @@ export async function executeChatStream(params: StreamChatParams) {
     });
 
     // 9. Stream execution (Claude or Fallback Simulation)
-    const client = getAnthropicClient();
+    const client = config.CHAT_PROVIDER === 'anthropic' ? getAnthropicClient() : null;
     let fullResponseText = '';
 
     // Filter tools if custom agent has enabled_tools whitelist
@@ -150,51 +156,61 @@ export async function executeChatStream(params: StreamChatParams) {
       availableTools = availableTools.filter((t) => customAgent.enabled_tools.includes(t.name));
     }
 
-    if (client) {
-      const stream = client.messages.stream({
-        model: config.ANTHROPIC_DEFAULT_MODEL,
-        max_tokens: 2048,
-        system: systemPrompt,
-        messages: anthropicMessages,
-        tools: availableTools,
-      });
-
-      for await (const chunk of stream) {
-        if (reply.raw.writableEnded) break;
-
-        if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-          const tokenText = chunk.delta.text;
-          fullResponseText += tokenText;
-          sendEvent({ type: 'token', text: tokenText });
-        }
-      }
-
-      // Check if Claude requested tool calls upon completion of message
-      const finalMessage = await stream.finalMessage();
-      for (const block of finalMessage.content) {
-        if (block.type === 'tool_use') {
-          const toolCall = await handleToolCall(userId, convId, block.name, block.input as Record<string, unknown>);
-          if (toolCall.status === 'confirmation_required') {
-            sendEvent({
-              type: 'tool_confirmation_required',
-              action_id: toolCall.action_id!,
-              tool_name: toolCall.tool_name!,
-              permission_level: 'write',
-              action_payload: toolCall.action_payload!,
-              description: toolCall.description!,
-            });
-          } else if (toolCall.status === 'executed') {
-            sendEvent({
-              type: 'tool_result',
-              tool_name: block.name,
-              result: toolCall.result,
-            });
+    if (client || config.CHAT_PROVIDER === 'groq') {
+      // Continue after read tools so the assistant can use their results.
+      for (let step = 0; step < 6; step++) {
+        let finalMessage: { content: Anthropic.ContentBlock[] };
+        if (config.CHAT_PROVIDER === 'groq') {
+          const blocks = await groqTurn({ system: systemPrompt, messages: anthropicMessages,
+            tools: availableTools, signal: params.abortSignal,
+            onText: text => { fullResponseText += text; sendEvent({ type: 'token', text }); } });
+          finalMessage = { content: blocks };
+        } else {
+          const stream = client!.messages.stream({
+            model: config.ANTHROPIC_DEFAULT_MODEL, max_tokens: 2048,
+            system: systemPrompt, messages: anthropicMessages, tools: availableTools,
+          });
+          for await (const chunk of stream) {
+            if (reply.raw.writableEnded) break;
+            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+              fullResponseText += chunk.delta.text;
+              sendEvent({ type: 'token', text: chunk.delta.text });
+            }
           }
+          finalMessage = await stream.finalMessage();
+        }
+        const calls = finalMessage.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
+        if (!calls.length) break;
+        anthropicMessages.push({ role: 'assistant', content: finalMessage.content });
+        const results: Anthropic.ToolResultBlockParam[] = [];
+        let needsReview = false;
+        for (const block of calls) {
+          const outcome = await handleToolCall(userId, convId, block.name, block.input as Record<string, unknown>);
+          if (outcome.status === 'confirmation_required') {
+            needsReview = true;
+            sendEvent({ type: 'tool_confirmation_required', action_id: outcome.action_id!,
+              tool_name: outcome.tool_name!, permission_level: 'write',
+              action_payload: outcome.action_payload!, description: outcome.description! });
+          } else {
+            sendEvent({ type: 'tool_result', tool_name: block.name, result: outcome.result || { error: outcome.error } });
+          }
+          results.push({ type: 'tool_result', tool_use_id: block.id,
+            content: JSON.stringify(outcome), is_error: outcome.status === 'failed' });
+        }
+        anthropicMessages.push({ role: 'user', content: results });
+        if (needsReview) break; // Never cross a confirmation boundary automatically.
+        if (step === 5) {
+          const text = '\nI reached the action limit. The task is not complete.';
+          fullResponseText += text;
+          sendEvent({ type: 'token', text });
         }
       }
+    } else if (!config.DEMO_MODE) {
+      throw new Error('Chat provider is not configured. No action was taken.');
     } else {
       // Intelligent fallback simulator for instant local testing without API key setup
       const lower = content.toLowerCase();
+      let triggeredConfirmation = false;
       // Check if user requested to send email / mail
       const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
       const emailMatch = content.match(emailRegex);
@@ -275,7 +291,7 @@ export async function executeChatStream(params: StreamChatParams) {
     await query(
       `INSERT INTO messages (id, conversation_id, user_id, role, content, model)
        VALUES ($1, $2, $3, 'assistant', $4, $5)`,
-      [assistantMsgId, convId, userId, fullResponseText, config.ANTHROPIC_DEFAULT_MODEL]
+      [assistantMsgId, convId, userId, fullResponseText, (config.CHAT_PROVIDER === 'groq' ? config.GROQ_MODEL : config.ANTHROPIC_DEFAULT_MODEL)]
     );
 
     // Update conversation timestamp and title if new
@@ -292,7 +308,7 @@ export async function executeChatStream(params: StreamChatParams) {
       user_id: userId,
       role: 'assistant',
       content: fullResponseText,
-      model: config.ANTHROPIC_DEFAULT_MODEL,
+      model: config.CHAT_PROVIDER === 'groq' ? config.GROQ_MODEL : config.ANTHROPIC_DEFAULT_MODEL,
       created_at: new Date().toISOString(),
     };
 
@@ -310,15 +326,15 @@ export async function executeChatStream(params: StreamChatParams) {
     reply.raw.end();
 
     // 10. Asynchronously extract facts/preferences into pgvector memory vault
-    extractMemoriesFromConversation(userId, content, fullResponseText, userMsgId).catch((memErr) => {
+    if (config.MEMORY_EXTRACTION_ENABLED && config.CHAT_PROVIDER === 'anthropic') extractMemoriesFromConversation(userId, content, fullResponseText, userMsgId).catch((memErr) => {
       console.warn('[Memory Extraction Background Error]:', memErr.message);
     });
   } catch (err: any) {
-    console.error('[Agent Stream Error]:', err);
+    console.error('[Agent Stream Error]:', err instanceof GroqProviderError ? err.code : 'AGENT_STREAM_ERROR');
     sendEvent({
       type: 'error',
       message: err.message || 'An error occurred while streaming response.',
-      code: 'AGENT_STREAM_ERROR',
+      code: err instanceof GroqProviderError ? err.code : 'AGENT_STREAM_ERROR',
     });
     reply.raw.end();
   }

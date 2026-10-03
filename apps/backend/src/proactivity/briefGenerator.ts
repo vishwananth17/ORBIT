@@ -4,13 +4,31 @@
 // ============================================================================
 
 import { pool } from '@orbit/database';
-import Anthropic from '@anthropic-ai/sdk';
+import { config } from '../config';
 import { DailyBrief, BriefType, AgendaItem, SuggestedAction } from '@orbit/shared';
 import { sendPushNotification } from './pushNotifier';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || 'mock-key',
-});
+// Brief synthesis uses the same Groq provider as chat (free tier, ZDR verified).
+async function groqBriefJson(prompt: string): Promise<any | null> {
+  if (!config.GROQ_API_KEY || !config.GROQ_ZDR_VERIFIED) return null;
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${config.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: config.GROQ_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_completion_tokens: 1000,
+      reasoning_effort: 'low',
+      response_format: { type: 'json_object' },
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok) throw new Error(`Groq HTTP ${response.status}`);
+  const data: any = await response.json();
+  const text: string = data?.choices?.[0]?.message?.content || '';
+  const match = text.match(/\{[\s\S]*\}/);
+  return match ? JSON.parse(match[0]) : null;
+}
 
 interface GenerateBriefOptions {
   userId: string;
@@ -86,9 +104,7 @@ export async function generateDailyBrief(options: GenerateBriefOptions): Promise
   let agendaItems: AgendaItem[] = [];
   let suggestedActions: SuggestedAction[] = [];
 
-  const hasApiKey = process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KEY.includes('mock');
-
-  if (hasApiKey) {
+  {
     try {
       const prompt = `You are Orbit, an elite proactive personal AI agent. Generate a structured ${type.replace('_', ' ')} for ${userName} on ${dateStr}.
 
@@ -122,26 +138,16 @@ Provide your response strictly as valid JSON matching this schema:
   ]
 }`;
 
-      const response = await anthropic.messages.create({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }],
-      });
-
-      const textBlock = response.content.find(b => b.type === 'text');
-      if (textBlock && textBlock.type === 'text') {
-        const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          title = parsed.title;
-          summary = parsed.summary;
-          audioSummary = parsed.audio_summary;
-          agendaItems = parsed.agenda_items || [];
-          suggestedActions = parsed.suggested_actions || [];
-        }
+      const parsed = await groqBriefJson(prompt);
+      if (parsed && parsed.title && parsed.summary) {
+        title = parsed.title;
+        summary = parsed.summary;
+        audioSummary = parsed.audio_summary || '';
+        agendaItems = parsed.agenda_items || [];
+        suggestedActions = parsed.suggested_actions || [];
       }
     } catch (llmErr: any) {
-      console.warn(`[BriefGenerator] LLM brief generation failed, using intelligent fallback:`, llmErr.message);
+      console.warn(`[BriefGenerator] LLM brief generation failed, using plain fallback:`, llmErr.message);
     }
   }
 
@@ -149,17 +155,16 @@ Provide your response strictly as valid JSON matching this schema:
   if (!title || !summary) {
     if (type === 'morning_brief') {
       const taskCount = tasks.filter(t => t.status !== 'completed').length;
-      title = `Plan for Today, ${userName}`;
+      title = 'Today';
       summary = taskCount > 0
-        ? `You have ${taskCount} open ${taskCount === 1 ? 'priority' : 'priorities'} on your radar today. Momentum starts with your highest leverage item.`
-        : `Your day is clear of immediate deadlines. An ideal window for deep creative focus or strategic exploration.`;
-      audioSummary = `Good morning, ${userName}. Here is your Orbit brief for today. You have ${taskCount} active priorities lined up. Let's make meaningful progress.`;
+        ? `You have ${taskCount} open ${taskCount === 1 ? 'task' : 'tasks'}.`
+        : 'No open tasks or events yet.';
     } else {
       const completedCount = tasks.filter(t => t.status === 'completed').length;
-      title = `Evening Reflection, ${userName}`;
-      summary = `Day wind-down. You completed ${completedCount} item${completedCount === 1 ? '' : 's'} today. Take a moment to rest and capture any loose thoughts.`;
-      audioSummary = `Good evening, ${userName}. Wrapping up the day. Great job on your completed work. Rest well for tomorrow.`;
+      title = 'Today in review';
+      summary = `You completed ${completedCount} ${completedCount === 1 ? 'task' : 'tasks'} today.`;
     }
+    audioSummary = '';
 
     agendaItems = tasks.map(t => ({
       id: t.id,

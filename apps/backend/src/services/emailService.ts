@@ -95,48 +95,5 @@ export async function sendRealEmail(options: SendEmailOptions): Promise<SendEmai
     }
   }
 
-  // 3. Ethereal Test Account Fallback (Produces a real viewable inbox on ethereal.email)
-  try {
-    const testAccount = await nodemailer.createTestAccount();
-    const testTransporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
-
-    const info = await testTransporter.sendMail({
-      from: `Orbit Agent <${testAccount.user}>`,
-      to,
-      subject,
-      text: body,
-      html: `<p>${body.replace(/\n/g, '<br/>')}</p>`,
-    });
-
-    const previewUrl = nodemailer.getTestMessageUrl(info) || undefined;
-    console.log(`[EmailService] Ethereal email sent to ${to}. Preview URL: ${previewUrl}`);
-
-    return {
-      sent: true,
-      to,
-      subject,
-      messageId: info.messageId,
-      provider: 'ethereal',
-      previewUrl,
-      sent_at: new Date().toISOString(),
-    };
-  } catch (err: any) {
-    console.warn('[EmailService] Ethereal fallback failed, using simulated receipt:', err.message);
-    return {
-      sent: true,
-      to,
-      subject,
-      messageId: `sim-mail-${Date.now()}`,
-      provider: 'simulated',
-      sent_at: new Date().toISOString(),
-    };
-  }
+  throw new Error('Email provider unavailable. No delivery was verified.');
 }

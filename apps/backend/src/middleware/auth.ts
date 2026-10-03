@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import * as jwt from 'jsonwebtoken';
+import { createClient } from '@supabase/supabase-js';
 import { config } from '../config';
 import { ensureUserExists } from '../db';
 
@@ -21,7 +21,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   const authHeader = request.headers.authorization;
 
   // Development bypass / default fallback when testing locally
-  if (config.NODE_ENV === 'development' && (!authHeader || authHeader === 'Bearer dev-token')) {
+  if (config.DEMO_MODE && config.NODE_ENV === 'development' && (!authHeader || authHeader === 'Bearer dev-token')) {
     const devUser: AuthenticatedUser = {
       id: DEV_USER_ID,
       email: 'dev@orbit.ai',
@@ -46,20 +46,22 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
 
   const token = authHeader.split(' ')[1];
 
+  let fullName = 'Orbit User';
   try {
-    // Decode and verify JWT
-    // Supabase sign tokens with SUPABASE_JWT_SECRET
-    const decoded = jwt.verify(token, config.SUPABASE_JWT_SECRET, { algorithms: ['HS256'] }) as any;
-
+    // Validate against the auth provider, including revoked/expired sessions.
+    const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY,
+      { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      request.log.warn({ auth_code: error?.code || 'NO_USER', auth_status: error?.status }, 'Auth provider rejected session');
+      throw new Error('Invalid authentication session');
+    }
+    const decoded = data.user;
     const user: AuthenticatedUser = {
-      id: decoded.sub,
-      email: decoded.email || `${decoded.sub}@user.orbit.ai`,
-      role: decoded.role || 'authenticated',
+      id: decoded.id, email: decoded.email || '', role: 'authenticated',
     };
 
-    // Ensure user record exists in database
-    await ensureUserExists(user.id, user.email, decoded.user_metadata?.full_name || 'Orbit User');
-
+    fullName = decoded.user_metadata?.full_name || 'Orbit User';
     request.user = user;
   } catch (err: any) {
     request.log.warn({ err: err.message }, 'JWT verification failed');
@@ -67,6 +69,15 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
       statusCode: 401,
       error: 'Unauthorized',
       message: 'Invalid or expired authentication token',
+      code: 'AUTH_SESSION_INVALID',
     });
+  }
+  if (!request.user) return;
+  try {
+    await ensureUserExists(request.user.id, request.user.email, fullName);
+  } catch (err: any) {
+    request.log.error({ code: err.code || 'DB_ERROR' }, 'Authenticated user setup failed');
+    return reply.status(503).send({ statusCode: 503, error: 'Service Unavailable',
+      code: 'USER_SETUP_UNAVAILABLE', message: 'Orbit could not load your account. Please try again later.' });
   }
 }

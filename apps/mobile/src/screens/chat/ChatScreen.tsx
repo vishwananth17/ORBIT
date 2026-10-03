@@ -15,6 +15,7 @@ import { ChatBubble } from '../../components/chat/ChatBubble';
 import { ChatInput } from '../../components/chat/ChatInput';
 import { EmptyState } from '../../components/chat/EmptyState';
 import { ConversationDrawer } from '../../components/chat/ConversationDrawer';
+import { SidebarNavItem } from '../../components/chat/SidebarPanel';
 import { ToolConfirmationCard } from '../../components/chat/ToolConfirmationCard';
 import { spacing, borderRadius, typography } from '../../theme';
 
@@ -24,6 +25,8 @@ interface ChatScreenProps {
   onOpenToday: () => void;
   onOpenAgents?: () => void;
   initialPrompt?: string | null;
+  navItems?: SidebarNavItem[];
+  embedded?: boolean;
 }
 
 export const ChatScreen: React.FC<ChatScreenProps> = ({
@@ -32,6 +35,8 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   onOpenToday,
   onOpenAgents,
   initialPrompt,
+  navItems,
+  embedded = false,
 }) => {
   const { colors } = useTheme();
   const {
@@ -79,16 +84,14 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Top Header */}
-      <Header
-        title={conversationTitle}
-        onOpenDrawer={() => setDrawerVisible(true)}
-        onOpenSettings={onOpenSettings}
-        onOpenMemoryVault={onOpenMemoryVault}
-        onOpenToday={onOpenToday}
-        onOpenAgents={onOpenAgents}
-        onNewChat={newChat}
-      />
+      {/* Top Header (compact screens only; the sidebar replaces it on wide screens) */}
+      {!embedded && (
+        <Header
+          title={conversationTitle}
+          onOpenDrawer={() => setDrawerVisible(true)}
+          onNewChat={newChat}
+        />
+      )}
 
       {/* Error Banner */}
       {error && (
@@ -104,6 +107,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       )}
 
       {/* Message Stream or Empty Starter Screen */}
+      <View style={styles.chatColumn}>
       <View style={styles.chatArea}>
         {messages.length === 0 && !isStreaming ? (
           <EmptyState onSelectPrompt={(prompt) => sendMessage(prompt)} />
@@ -137,6 +141,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         onStopStreaming={stopStreaming}
         isStreaming={isStreaming}
       />
+      </View>
 
       {/* Slide-over Conversation Drawer */}
       <ConversationDrawer
@@ -147,6 +152,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         onNewChat={newChat}
         onDeleteConversation={(id) => deleteConversation(id)}
         onClose={() => setDrawerVisible(false)}
+        navItems={navItems}
       />
     </SafeAreaView>
   );
@@ -155,6 +161,12 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  chatColumn: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 768,
+    alignSelf: 'center',
   },
   chatArea: {
     flex: 1,

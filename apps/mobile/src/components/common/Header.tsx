@@ -8,8 +8,8 @@ import { spacing, borderRadius, typography } from '../../theme';
 interface HeaderProps {
   title?: string;
   onOpenDrawer: () => void;
-  onOpenSettings: () => void;
-  onOpenMemoryVault: () => void;
+  onOpenSettings?: () => void;
+  onOpenMemoryVault?: () => void;
   onOpenToday?: () => void;
   onOpenAgents?: () => void;
   onOpenJournal?: () => void;
@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
             style={[styles.iconButton, { backgroundColor: colors.surface }]}
             accessibilityLabel="Switch Personas & Custom Agents"
           >
-            <Bot size={18} color={colors.accent} />
+            <Bot size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
 
@@ -72,17 +72,19 @@ export const Header: React.FC<HeaderProps> = ({
             style={[styles.iconButton, { backgroundColor: colors.surface }]}
             accessibilityLabel="Open Today's Brief"
           >
-            <Sun size={18} color="#F59E0B" />
+            <Sun size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
 
+        {onOpenMemoryVault && (
         <TouchableOpacity
           onPress={onOpenMemoryVault}
           style={[styles.iconButton, { backgroundColor: colors.surface }]}
           accessibilityLabel="Open Memory Vault"
         >
-          <Brain size={18} color={colors.accent} />
+          <Brain size={18} color={colors.textSecondary} />
         </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           onPress={onNewChat}
@@ -92,6 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Plus size={18} color={colors.textPrimary} />
         </TouchableOpacity>
 
+        {onOpenSettings && (
         <TouchableOpacity
           onPress={onOpenSettings}
           style={[styles.iconButton, { backgroundColor: colors.surface }]}
@@ -99,6 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Settings size={18} color={colors.textSecondary} />
         </TouchableOpacity>
+        )}
       </View>
     </View>
   );

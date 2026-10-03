@@ -10,7 +10,7 @@ import { userRoutes } from './routes/user';
 import { memoryRoutes } from './routes/memory';
 import { taskRoutes } from './routes/tasks';
 import { actionRoutes } from './routes/actions';
-import { integrationRoutes } from './routes/integrations';
+import { integrationRoutes, googleCallbackRoutes } from './routes/integrations';
 import multipart from '@fastify/multipart';
 import { briefsRoutes } from './routes/briefs';
 import { notificationsRoutes } from './routes/notifications';
@@ -29,7 +29,7 @@ const server = Fastify({
 async function main() {
   // 1. Security Plugins
   await server.register(cors, {
-    origin: true, // Allow mobile app origin
+    origin: config.FRONTEND_URL, // Explicit web origin; native clients do not need CORS
     credentials: true,
   });
 
@@ -58,6 +58,8 @@ async function main() {
     };
   });
 
+  await server.register(googleCallbackRoutes, { prefix: '/oauth' });
+
   // 3. Register Protected API Routes
   await server.register(
     async (api) => {
@@ -81,7 +83,8 @@ async function main() {
   );
 
   // 4. Start Proactive Background Scheduler (BullMQ + Cron)
-  startProactiveScheduler();
+  if (config.PROACTIVE_ENABLED) startProactiveScheduler();
+  else server.log.info('Proactive scheduling disabled for this deployment');
 
   // 5. Graceful Shutdown
   const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];

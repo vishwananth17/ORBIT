@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { getValidAccessToken } from '../services/authSession';
 import {
   StreamEvent,
   Conversation,
@@ -21,7 +22,7 @@ import {
   JournalAnalytics,
 } from '@orbit/shared';
 
-import { Platform } from 'react-native';
+import { Platform, Linking } from 'react-native';
 
 // Determine backend API URL (supports Web, Vercel env, Android Emulator 10.0.2.2, iOS Simulator localhost)
 const getApiBaseUrl = (): string => {
@@ -58,7 +59,8 @@ export const apiClient = {
     endpoint: string,
     options: RequestInit & { token?: string | null } = {}
   ): Promise<T> {
-    const { token, ...fetchOptions } = options;
+    const { token: legacyToken, ...fetchOptions } = options;
+    const token = await getValidAccessToken(legacyToken);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -68,7 +70,7 @@ export const apiClient = {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     } else {
-      headers['Authorization'] = 'Bearer dev-token';
+      if (process.env.EXPO_PUBLIC_DEMO_MODE === 'true') headers['Authorization'] = 'Bearer dev-token';
     }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -169,21 +171,7 @@ export const apiClient = {
         body: JSON.stringify({ action_id: actionId, approved, modified_payload: modifiedPayload }),
         token,
       });
-    } catch {
-      // Seamless fallback for client-only / Vercel standalone preview
-      return {
-        success: true,
-        status: approved ? 'executed' : 'rejected',
-        result: approved
-          ? {
-              status: 'delivered',
-              messageId: 'orbit-msg-' + Math.random().toString(36).substring(2, 9),
-              recipient: (modifiedPayload as any)?.to || 'recipient',
-              timestamp: new Date().toISOString(),
-            }
-          : undefined,
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   // Third-Party Integrations (OAuth)
@@ -191,52 +179,23 @@ export const apiClient = {
     try {
       const res = await this.request<{ integrations: Array<{ provider: string; name: string; description: string; is_connected: boolean }> }>('/api/integrations', { token });
       return res.integrations;
-    } catch {
-      return [
-        { provider: 'google', name: 'Google Workspace', description: 'Gmail & Google Calendar', is_connected: true },
-        { provider: 'slack', name: 'Slack Workspaces', description: 'Team notifications & channels', is_connected: false },
-        { provider: 'github', name: 'GitHub Developer', description: 'Repo issues & pull requests', is_connected: true },
-        { provider: 'notion', name: 'Notion Workspace', description: 'Docs & Project roadmap sync', is_connected: false },
-      ];
-    }
+    } catch (error) { throw error; }
   },
 
   async connectIntegration(provider: string, token?: string | null): Promise<void> {
-    try {
-      await this.request(`/api/integrations/${provider}/connect`, {
-        method: 'POST',
-        token,
-      });
-    } catch {}
+    const result = await this.request<{ authorization_url: string }>(`/api/integrations/${provider}/connect`, { method: 'POST', token });
+    await Linking.openURL(result.authorization_url);
   },
 
   async disconnectIntegration(provider: string, token?: string | null): Promise<void> {
-    try {
-      await this.request(`/api/integrations/${provider}`, {
-        method: 'DELETE',
-        token,
-      });
-    } catch {}
+    await this.request(`/api/integrations/${provider}`, { method: 'DELETE', token });
   },
 
   // Daily Briefs & Proactivity API
   async getTodayBrief(token?: string | null): Promise<{ date: string; morning_brief: DailyBrief | null; evening_review: DailyBrief | null }> {
     try {
       return await this.request('/api/briefs/today', { token });
-    } catch {
-      return {
-        date: new Date().toISOString().split('T')[0],
-        morning_brief: {
-          id: 'brief-today',
-          user_id: 'dev-user',
-          type: 'morning_brief',
-          content: 'Good morning! You have 3 priority focus blocks today, including a product sync at 2 PM. Zero critical pending alerts.',
-          is_read: false,
-          created_at: new Date().toISOString(),
-        },
-        evening_review: null,
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async generateBrief(type?: BriefType, token?: string | null): Promise<DailyBrief> {
@@ -246,16 +205,7 @@ export const apiClient = {
         body: JSON.stringify({ type }),
         token,
       });
-    } catch {
-      return {
-        id: 'brief-' + Date.now(),
-        user_id: 'dev-user',
-        type: type || 'morning_brief',
-        content: 'Briefing generated: Schedule and priorities aligned for maximum focus.',
-        is_read: false,
-        created_at: new Date().toISOString(),
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async markBriefRead(id: string, token?: string | null): Promise<DailyBrief> {
@@ -264,41 +214,20 @@ export const apiClient = {
         method: 'PATCH',
         token,
       });
-    } catch {
-      return {
-        id,
-        user_id: 'dev-user',
-        type: 'morning_brief',
-        content: 'Brief marked as read.',
-        is_read: true,
-        created_at: new Date().toISOString(),
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async getBriefHistory(limit?: number, token?: string | null): Promise<{ briefs: DailyBrief[] }> {
     try {
       const query = limit ? `?limit=${limit}` : '';
       return await this.request(`/api/briefs/history${query}`, { token });
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   async getNotificationSettings(token?: string | null): Promise<NotificationSettings> {
     try {
       return await this.request('/api/notifications/settings', { token });
-    } catch {
-      return {
-        quiet_hours_start: '22:00',
-        quiet_hours_end: '07:30',
-        allow_urgent_interruptions: true,
-        daily_brief_time: '08:00',
-        evening_review_time: '20:00',
-        channel_push: true,
-        channel_email: false,
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async updateNotificationSettings(settings: NotificationSettingsUpdate, token?: string | null): Promise<NotificationSettings> {
@@ -308,17 +237,7 @@ export const apiClient = {
         body: JSON.stringify(settings),
         token,
       });
-    } catch {
-      return {
-        quiet_hours_start: settings.quiet_hours_start || '22:00',
-        quiet_hours_end: settings.quiet_hours_end || '07:30',
-        allow_urgent_interruptions: settings.allow_urgent_interruptions ?? true,
-        daily_brief_time: settings.daily_brief_time || '08:00',
-        evening_review_time: settings.evening_review_time || '20:00',
-        channel_push: settings.channel_push ?? true,
-        channel_email: settings.channel_email ?? false,
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async testPushNotification(token?: string | null): Promise<{ success: boolean; result: unknown }> {
@@ -327,17 +246,13 @@ export const apiClient = {
         method: 'POST',
         token,
       });
-    } catch {
-      return { success: true, result: 'Notification simulated' };
-    }
+    } catch (error) { throw error; }
   },
 
   async getProactiveNudges(token?: string | null): Promise<{ nudges: ProactiveNudge[] }> {
     try {
       return await this.request('/api/notifications/nudges', { token });
-    } catch {
-      return { nudges: [] };
-    }
+    } catch (error) { throw error; }
   },
 
   async dismissProactiveNudge(id: string, token?: string | null): Promise<{ success: boolean; nudge: ProactiveNudge }> {
@@ -346,9 +261,7 @@ export const apiClient = {
         method: 'PATCH',
         token,
       });
-    } catch {
-      return { success: true, nudge: { id, title: 'Dismissed', content: '', type: 'reminder', is_dismissed: true, created_at: new Date().toISOString() } };
-    }
+    } catch (error) { throw error; }
   },
 
   // Voice & Quick Capture API
@@ -359,9 +272,7 @@ export const apiClient = {
         body: JSON.stringify({ audio_base64: audioBase64, mime_type: mimeType }),
         token,
       });
-    } catch {
-      return { text: 'Transcribed voice input via Orbit Speech Engine.', confidence: 0.98 };
-    }
+    } catch (error) { throw error; }
   },
 
   async synthesizeVoice(text: string, voice?: string, token?: string | null): Promise<VoiceSynthesisResult> {
@@ -371,9 +282,7 @@ export const apiClient = {
         body: JSON.stringify({ text, voice }),
         token,
       });
-    } catch {
-      return { audioBase64: '', mimeType: 'audio/mp3', text };
-    }
+    } catch (error) { throw error; }
   },
 
   async quickCapture(input?: string, audioBase64?: string, token?: string | null): Promise<{ result: QuickCaptureResult }> {
@@ -383,43 +292,14 @@ export const apiClient = {
         body: JSON.stringify({ input, audio_base64: audioBase64 }),
         token,
       });
-    } catch {
-      return {
-        result: {
-          type: 'task',
-          category: 'task',
-          confidence: 0.95,
-          payload: { title: input || 'Quick Capture Record' },
-          receipt: `Captured: ${input || 'Quick Capture Record'}`,
-        },
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   // Custom Agents & Personas (Phase 6)
   async getAgents(token?: string | null): Promise<{ agents: CustomAgent[]; presets: any[] }> {
     try {
       return await this.request<{ agents: CustomAgent[]; presets: any[] }>('/api/agents', { token });
-    } catch {
-      return {
-        agents: [
-          {
-            id: 'agent-executive',
-            user_id: 'dev-user',
-            name: 'Executive Brief',
-            description: 'Concise, high-level summaries and schedule coordination.',
-            system_prompt: 'You are an executive chief of staff. Be succinct, highly structured, and action-oriented.',
-            tone: 'formal',
-            avatar: 'briefcase',
-            enabled_tools: ['send_email', 'create_calendar_event', 'search_memory'],
-            is_default: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ],
-        presets: [],
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async createAgent(input: CreateCustomAgentInput, token?: string | null): Promise<{ agent: CustomAgent }> {
@@ -429,23 +309,7 @@ export const apiClient = {
         body: JSON.stringify(input),
         token,
       });
-    } catch {
-      return {
-        agent: {
-          id: 'agent-' + Date.now(),
-          user_id: 'dev-user',
-          name: input.name,
-          description: input.description,
-          system_prompt: input.system_prompt,
-          tone: input.tone,
-          avatar: input.avatar,
-          enabled_tools: input.enabled_tools,
-          is_default: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async updateAgent(id: string, input: UpdateCustomAgentInput, token?: string | null): Promise<{ agent: CustomAgent }> {
@@ -455,23 +319,7 @@ export const apiClient = {
         body: JSON.stringify(input),
         token,
       });
-    } catch {
-      return {
-        agent: {
-          id,
-          user_id: 'dev-user',
-          name: input.name || 'Agent',
-          description: input.description || '',
-          system_prompt: input.system_prompt || '',
-          tone: input.tone || 'neutral',
-          avatar: input.avatar || 'bot',
-          enabled_tools: input.enabled_tools || [],
-          is_default: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async deleteAgent(id: string, token?: string | null): Promise<{ success: boolean }> {
@@ -480,9 +328,7 @@ export const apiClient = {
         method: 'DELETE',
         token,
       });
-    } catch {
-      return { success: true };
-    }
+    } catch (error) { throw error; }
   },
 
   async setDefaultAgent(id: string, token?: string | null): Promise<{ success: boolean; agent: CustomAgent }> {
@@ -491,33 +337,14 @@ export const apiClient = {
         method: 'POST',
         token,
       });
-    } catch {
-      return {
-        success: true,
-        agent: {
-          id,
-          user_id: 'dev-user',
-          name: 'Default Agent',
-          description: '',
-          system_prompt: '',
-          tone: 'neutral',
-          avatar: 'bot',
-          enabled_tools: [],
-          is_default: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   // Daily Journal & Insights Analytics (Phase 7)
   async getTodayJournal(token?: string | null): Promise<{ entry: JournalEntry | null }> {
     try {
       return await this.request<{ entry: JournalEntry | null }>('/api/journal/today', { token });
-    } catch {
-      return { entry: null };
-    }
+    } catch (error) { throw error; }
   },
 
   async saveJournal(input: CreateJournalEntryInput, token?: string | null): Promise<{ entry: JournalEntry }> {
@@ -527,70 +354,26 @@ export const apiClient = {
         body: JSON.stringify(input),
         token,
       });
-    } catch {
-      return {
-        entry: {
-          id: 'journal-' + Date.now(),
-          user_id: 'dev-user',
-          date: new Date().toISOString().split('T')[0],
-          content: input.content,
-          mood_score: input.mood_score ?? 4,
-          energy_score: input.energy_score ?? 4,
-          productivity_score: input.productivity_score ?? 4,
-          tags: input.tags || ['focus'],
-          summary: 'Reflection saved.',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async getJournalHistory(limit = 14, token?: string | null): Promise<{ entries: JournalEntry[] }> {
     try {
       return await this.request<{ entries: JournalEntry[] }>(`/api/journal/history?limit=${limit}`, { token });
-    } catch {
-      return { entries: [] };
-    }
+    } catch (error) { throw error; }
   },
 
   async getJournalAnalytics(days = 7, token?: string | null): Promise<{ analytics: JournalAnalytics }> {
     try {
       return await this.request<{ analytics: JournalAnalytics }>(`/api/journal/analytics?days=${days}`, { token });
-    } catch {
-      return {
-        analytics: {
-          period_days: days,
-          total_entries: 5,
-          avg_mood: 4.2,
-          avg_energy: 3.9,
-          avg_productivity: 4.5,
-          top_tags: [{ tag: 'focus', count: 4 }, { tag: 'health', count: 3 }],
-          mood_trend: 'improving',
-        },
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   // User Profile & Settings
   async getProfile(token?: string | null): Promise<{ user: User; settings: NotificationSettings | null }> {
     try {
       return await this.request<{ user: User; settings: NotificationSettings | null }>('/api/user/me', { token });
-    } catch {
-      return {
-        user: {
-          id: 'dev-user',
-          email: 'user@orbit.ai',
-          full_name: 'Orbit Explorer',
-          avatar_url: null,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-          locale: 'en-US',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        settings: null,
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async updateSettings(settings: Partial<NotificationSettings>, token?: string | null): Promise<NotificationSettings> {
@@ -601,31 +384,19 @@ export const apiClient = {
         token,
       });
       return res.settings;
-    } catch {
-      return {
-        quiet_hours_start: '22:00',
-        quiet_hours_end: '07:30',
-        allow_urgent_interruptions: true,
-        daily_brief_time: '08:00',
-        evening_review_time: '20:00',
-        channel_push: true,
-        channel_email: false,
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async exportData(token?: string | null): Promise<Record<string, unknown>> {
     try {
       return await this.request('/api/user/export', { method: 'POST', token });
-    } catch {
-      return { export: 'data', timestamp: new Date().toISOString() };
-    }
+    } catch (error) { throw error; }
   },
 
   async deleteAccount(token?: string | null): Promise<void> {
     try {
       await this.request('/api/user/account', { method: 'DELETE', token });
-    } catch {}
+    } catch (error) { throw error; }
   },
 
   // Real-time SSE Chat Stream with Resilient Autonomous Fallback
@@ -659,7 +430,7 @@ export const apiClient = {
           emailBody = 'i love you';
         }
 
-        const notice = `I have drafted the email to **${toEmail}**.\n\n⚠️ **Action Confirmation Required:** As per our Zero-Leakage Privacy & Safety guardrails, all consequential write actions require your explicit, one-tap approval before they are dispatched.`;
+        const notice = `I have drafted the email to **${toEmail}**.\n\n**Action Confirmation Required:** As per our Zero-Leakage Privacy & Safety guardrails, all consequential write actions require your explicit, one-tap approval before they are dispatched.`;
 
         const words = notice.split(' ');
         for (const w of words) {
@@ -684,7 +455,7 @@ export const apiClient = {
           },
         });
       } else if (lower.includes('schedule') || lower.includes('meeting') || lower.includes('calendar')) {
-        const notice = `I have prepared the calendar event in your schedule.\n\n⚠️ **Action Confirmation Required:** Please review the details below and confirm to book the slot.`;
+        const notice = `I have prepared the calendar event in your schedule.\n\n**Action Confirmation Required:** Please review the details below and confirm to book the slot.`;
         const words = notice.split(' ');
         for (const w of words) {
           if (signal?.aborted) return;
@@ -743,12 +514,14 @@ export const apiClient = {
     };
 
     try {
+      const currentToken = await getValidAccessToken(authToken);
+      if (!currentToken) throw new Error('Please sign in to Orbit before chatting.');
       const url = `${API_BASE_URL}/api/chat/stream`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: authToken ? `Bearer ${authToken}` : 'Bearer dev-token',
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify({
           content,
@@ -759,9 +532,9 @@ export const apiClient = {
       });
 
       if (!response.ok) {
-        // Fall back seamlessly to client-side agent logic if backend endpoint returned 404/500
-        await executeFallbackSimulation();
-        return;
+        if (response.status === 401) throw new Error('Your Orbit session expired. Sign out and sign in again. No action was completed.');
+        const failure = await response.json().catch(() => ({}));
+        throw new Error(failure.message || `Chat failed (${response.status}). No action was completed.`);
       }
 
       // Check for streaming body support
@@ -812,7 +585,8 @@ export const apiClient = {
         console.log('[SSE Stream Aborted]');
         onComplete();
       } else {
-        // Network unreachable or CORS failure: seamless client-side agent fallback
+        if (process.env.EXPO_PUBLIC_DEMO_MODE !== 'true') { onError(err); return; }
+        // Explicit demo only
         try {
           await executeFallbackSimulation();
         } catch (fallbackErr: any) {

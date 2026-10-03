@@ -1,6 +1,6 @@
 # Orbit — Proactive, Memory-Driven Personal AI Agent
 
-> **Production-grade mobile companion for ambitious individuals. Privacy-first, fast SSE streaming, continuous semantic memory via `pgvector`, and two-phase explicit confirmation for every consequential action.**
+> Development project, not production-certified. Chat and semantic memory require configured providers. Gmail and Calendar read access require Orbit OAuth configuration. Email sends and calendar changes are disabled until a separately tested write rollout. Demo mode must be explicitly enabled and is forbidden in production.
 
 ---
 
@@ -39,7 +39,7 @@ Copy the template configuration:
 ```bash
 cp .env.example .env
 ```
-Add your Anthropic API Key (or test with the built-in fallback simulator):
+Configure an AI provider only if you approve its usage costs. For offline simulation, explicitly set DEMO_MODE=true and EXPO_PUBLIC_DEMO_MODE=true. Never use demo mode with private accounts.
 ```env
 ANTHROPIC_API_KEY=sk-ant-api03-...
 ```
@@ -80,3 +80,7 @@ Run the agent prompt assembly and Zod validation test suite:
 ```bash
 npm run test
 ```
+
+## Foundation and Google rollout
+
+See [the setup and validation checklist](docs/GOOGLE_SETUP.md). This branch is unmerged and live integration has not been verified.

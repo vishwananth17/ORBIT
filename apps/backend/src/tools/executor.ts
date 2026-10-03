@@ -1,8 +1,8 @@
+import { searchGoogleEmails, readGoogleEmail, readGoogleCalendar } from '../integrations/google';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db';
 import { ActionLog, TOOL_NAMES, Task } from '@orbit/shared';
 import { doesToolRequireConfirmation, TOOL_REGISTRY } from './registry';
-import { sendRealEmail } from '../services/emailService';
 
 export interface ToolExecutionResponse {
   status: 'executed' | 'confirmation_required' | 'failed';
@@ -24,6 +24,7 @@ export async function handleToolCall(
   toolName: string,
   args: Record<string, unknown>
 ): Promise<ToolExecutionResponse> {
+  if (!TOOL_REGISTRY[toolName]) return { status: 'failed', error: 'Unknown tool' };
   const requiresConfirmation = doesToolRequireConfirmation(toolName);
 
   if (requiresConfirmation) {
@@ -130,41 +131,15 @@ async function executeDirectTool(userId: string, toolName: string, args: Record<
       return { success: true, task: res.rows[0] };
     }
 
-    case TOOL_NAMES.GET_CALENDAR_EVENTS: {
-      // Connects to Google Calendar API if integration active, or provides context
-      const timeMin = args.time_min || new Date().toISOString();
-      return {
-        events: [
-          {
-            id: 'mock-evt-1',
-            summary: 'Orbit Project Sprint Review',
-            start: timeMin,
-            end: new Date(Date.now() + 3600000).toISOString(),
-            status: 'confirmed',
-          },
-        ],
-        source: 'Google Calendar (Integration synced)',
-      };
-    }
-
-    case TOOL_NAMES.SEARCH_EMAILS: {
-      const q = String(args.query || '');
-      return {
-        messages: [
-          {
-            id: 'mock-msg-1',
-            from: 'alex@company.com',
-            subject: 'Re: Product launch roadmap',
-            snippet: 'Looking forward to the Orbit personal AI agent launch. The architecture looks solid.',
-            date: new Date().toISOString(),
-          },
-        ],
-        query: q,
-      };
-    }
+    case TOOL_NAMES.GET_CALENDAR_EVENTS:
+      return readGoogleCalendar(userId, args);
+    case TOOL_NAMES.SEARCH_EMAILS:
+      return searchGoogleEmails(userId, args);
+    case TOOL_NAMES.READ_EMAIL:
+      return readGoogleEmail(userId, args);
 
     default:
-      return { success: true, result: 'Tool executed successfully.' };
+      throw new Error('Tool is not implemented');
   }
 }
 
@@ -199,7 +174,7 @@ export async function confirmAction(
   if (!approved) {
     await query(
       `UPDATE action_logs
-       SET confirmation_status = 'rejected', updated_at = NOW()
+       SET confirmation_status = 'rejected'
        WHERE id = $1`,
       [actionId]
     );
@@ -207,42 +182,12 @@ export async function confirmAction(
   }
 
   // Approved: execute consequential action
-  const payload = modifiedPayload || action.action_payload;
+  if (modifiedPayload) throw new Error('Changed actions need a new preview and confirmation.');
+  const payload = action.action_payload;
   let executionResult: unknown = null;
 
   try {
-    if (action.tool_name === TOOL_NAMES.SEND_EMAIL) {
-      const emailResult = await sendRealEmail({
-        to: payload.to,
-        subject: payload.subject || 'Personal Note',
-        body: payload.body || '',
-      });
-      executionResult = {
-        sent: true,
-        to: payload.to,
-        subject: payload.subject,
-        sent_at: emailResult.sent_at,
-        receipt_id: emailResult.messageId,
-        provider: emailResult.provider,
-        previewUrl: emailResult.previewUrl,
-      };
-    } else if (action.tool_name === TOOL_NAMES.CREATE_CALENDAR_EVENT) {
-      executionResult = {
-        created: true,
-        summary: payload.summary,
-        start_time: payload.start_time,
-        end_time: payload.end_time,
-        event_id: `gcal-event-${Date.now()}`,
-      };
-    } else if (action.tool_name === TOOL_NAMES.DELETE_CALENDAR_EVENT) {
-      executionResult = {
-        deleted: true,
-        event_id: payload.event_id,
-        summary: payload.summary,
-      };
-    } else {
-      executionResult = { success: true, payload };
-    }
+    throw new Error('Google integration is not configured. No email was sent or calendar event changed.');
 
     await query(
       `UPDATE action_logs

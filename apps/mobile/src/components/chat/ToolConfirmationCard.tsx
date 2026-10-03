@@ -34,7 +34,7 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
         return <Mail size={16} color={colors.accent} />;
       case TOOL_NAMES.CREATE_CALENDAR_EVENT:
       case TOOL_NAMES.DELETE_CALENDAR_EVENT:
-        return <Calendar size={16} color="#0EA5E9" />;
+        return <Calendar size={16} color={colors.textSecondary} />;
       case TOOL_NAMES.DELETE_MEMORY:
         return <Trash2 size={16} color={colors.destructive} />;
       default:
@@ -91,10 +91,10 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
               {
                 backgroundColor:
                   action.status === 'pending'
-                    ? 'rgba(245, 158, 11, 0.12)'
+                    ? colors.surfaceSecondary
                     : action.status === 'executed'
-                    ? 'rgba(16, 185, 129, 0.12)'
-                    : 'rgba(239, 68, 68, 0.12)',
+                    ? colors.surfaceSecondary
+                    : colors.destructiveSubtle,
               },
             ]}
           >
@@ -128,9 +128,13 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
                 <Text style={[styles.paramLabel, { color: colors.textSecondary }]}>Subject:</Text>
                 <Text style={[styles.paramValue, { color: colors.textPrimary }]}>{String(payload.subject || '')}</Text>
               </View>
+              {Array.isArray(payload.cc) && payload.cc.length > 0 && (
+                <View style={styles.paramRow}><Text style={[styles.paramLabel, { color: colors.textSecondary }]}>CC:</Text>
+                <Text style={[styles.paramValue, { color: colors.textPrimary }]}>{payload.cc.join(', ')}</Text></View>
+              )}
               <View style={[styles.paramRow, { borderBottomWidth: 0 }]}>
                 <Text style={[styles.paramLabel, { color: colors.textSecondary }]}>Message:</Text>
-                <Text style={[styles.paramValue, { color: colors.textPrimary }]} numberOfLines={3}>
+                <Text style={[styles.paramValue, { color: colors.textPrimary }]}>
                   {String(payload.body || '')}
                 </Text>
               </View>

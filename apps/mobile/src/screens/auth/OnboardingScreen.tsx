@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
+import { Card } from '../../components/common/Card';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated, Easing } from 'react-native';
 import { ShieldCheck, Brain, ArrowRight, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
@@ -15,24 +16,24 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const slides = [
     {
       icon: ShieldCheck,
-      badge: 'Zero-Leakage Privacy',
-      title: 'Your Thoughts.\nStrictly Confidential.',
+      badge: 'Your personal workspace',
+      title: 'Less to carry.\nMore room to think.',
       description:
-        'Orbit is engineered with end-to-end encrypted storage, PostgreSQL Row-Level Security, and on-device biometric locks. Your data never trains public models.',
+        'Bring your plans, notes and conversations together. Sign in to your own account before connecting private information.',
     },
     {
       icon: Brain,
-      badge: 'Semantic Vector Memory',
-      title: 'An Assistant That\nTruly Remembers.',
+      badge: 'Memory you can review',
+      title: 'Keep the details.\nSee the bigger picture.',
       description:
-        'Orbit automatically extracts facts, preferences, and project goals from your conversations, retrieving contextual memories right when you need them.',
+        'Review and edit the notes Orbit keeps about you, and remove any of them whenever you like.',
     },
     {
       icon: Sparkles,
-      badge: 'Two-Phase Agency',
-      title: 'Proactive Power.\nZero Surprises.',
+      badge: 'Connected, with care',
+      title: 'Your inbox.\nYour day. Your call.',
       description:
-        'From morning briefings to drafting emails and booking calendar slots: every consequential action requires your explicit, one-tap approval.',
+        'Connect Gmail for read-only access when you are ready. Sending email and calendar changes stay off.',
     },
   ];
 
@@ -45,6 +46,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   };
 
   const slide = slides[currentSlide];
+  const enter = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    enter.setValue(0);
+    Animated.timing(enter, { toValue: 1, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+  }, [currentSlide]);
   const Icon = slide.icon;
 
   return (
@@ -59,7 +65,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <Animated.View style={{ opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }], width: '100%', alignItems: 'center' }}>
+      <Card style={styles.content}>
         <View style={[styles.iconContainer, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
           <View style={[styles.iconInner, { backgroundColor: colors.accentSubtle }]}>
             <Icon size={36} color={colors.accent} />
@@ -72,7 +79,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
         <Text style={[styles.title, { color: colors.textPrimary }]}>{slide.title}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>{slide.description}</Text>
-      </View>
+      </Card>
+      </Animated.View>
 
       <View style={styles.footer}>
         {/* Pagination Dots */}
@@ -92,6 +100,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         </View>
 
         <TouchableOpacity
+          activeOpacity={0.85}
+          accessibilityRole="button"
           onPress={handleNext}
           style={[styles.nextButton, { backgroundColor: colors.accent }]}
         >
@@ -134,7 +144,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   content: {
-    paddingHorizontal: spacing.xxxl,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.xxxl,
+    marginHorizontal: spacing.xxl,
+    maxWidth: 540,
+    alignSelf: 'center',
     alignItems: 'center',
   },
   iconContainer: {
@@ -195,6 +209,9 @@ const styles = StyleSheet.create({
   nextButton: {
     flexDirection: 'row',
     height: 54,
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
     borderRadius: borderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',

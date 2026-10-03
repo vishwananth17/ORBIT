@@ -23,17 +23,17 @@ export const MemoryCard: React.FC<MemoryCardProps> = ({
   const getCategoryTheme = (category: MemoryCategory) => {
     switch (category) {
       case 'preference':
-        return { bg: 'rgba(16, 185, 129, 0.12)', text: '#10B981', border: 'rgba(16, 185, 129, 0.3)' };
+        return { bg: 'rgba(128, 128, 128, 0.12)', text: '#A3A3A3', border: 'rgba(128, 128, 128, 0.3)' };
       case 'goal':
-        return { bg: 'rgba(14, 165, 233, 0.12)', text: '#0EA5E9', border: 'rgba(14, 165, 233, 0.3)' };
+        return { bg: 'rgba(128, 128, 128, 0.12)', text: '#A3A3A3', border: 'rgba(128, 128, 128, 0.3)' };
       case 'project':
-        return { bg: 'rgba(139, 92, 246, 0.12)', text: '#8B5CF6', border: 'rgba(139, 92, 246, 0.3)' };
+        return { bg: 'rgba(128, 128, 128, 0.12)', text: '#A3A3A3', border: 'rgba(128, 128, 128, 0.3)' };
       case 'routine':
-        return { bg: 'rgba(20, 184, 166, 0.12)', text: '#14B8A6', border: 'rgba(20, 184, 166, 0.3)' };
+        return { bg: 'rgba(128, 128, 128, 0.12)', text: '#A3A3A3', border: 'rgba(128, 128, 128, 0.3)' };
       case 'relationship':
-        return { bg: 'rgba(236, 72, 153, 0.12)', text: '#EC4899', border: 'rgba(236, 72, 153, 0.3)' };
+        return { bg: 'rgba(128, 128, 128, 0.12)', text: '#A3A3A3', border: 'rgba(128, 128, 128, 0.3)' };
       default:
-        return { bg: 'rgba(245, 158, 11, 0.12)', text: '#F59E0B', border: 'rgba(245, 158, 11, 0.3)' };
+        return { bg: 'rgba(128, 128, 128, 0.12)', text: '#A3A3A3', border: 'rgba(128, 128, 128, 0.3)' };
     }
   };
 

@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Sparkles, Copy, Check } from 'lucide-react-native';
 import { Message } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 import { StreamingCursor } from './StreamingCursor';
+import { Markdown } from './Markdown';
 
 interface ChatBubbleProps {
   message?: Message;
@@ -20,6 +21,15 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   const { colors } = useTheme();
   const [copied, setCopied] = React.useState(false);
 
+  const appear = React.useRef(new Animated.Value(0)).current;
+  React.useEffect(() => {
+    Animated.timing(appear, { toValue: 1, duration: 260, useNativeDriver: true }).start();
+  }, [appear]);
+  const enter = {
+    opacity: appear,
+    transform: [{ translateY: appear.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }],
+  };
+
   const isUser = message?.role === 'user';
   const content = isStreaming ? streamingText : message?.content || '';
 
@@ -31,22 +41,22 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   if (isUser) {
     return (
-      <View style={styles.userContainer}>
-        <View style={[styles.userBubble, { backgroundColor: colors.userBubble, borderColor: colors.borderSubtle }]}>
+      <Animated.View style={[styles.userContainer, enter]}>
+        <View style={[styles.userBubble, { backgroundColor: colors.userBubble }]}>
           <Text style={[styles.userText, { color: colors.textPrimary }]}>
             {content}
           </Text>
         </View>
-      </View>
+      </Animated.View>
     );
   }
 
   // Assistant Bubble
   return (
-    <View style={styles.assistantContainer}>
+    <Animated.View style={[styles.assistantContainer, enter]}>
       <View style={styles.headerRow}>
-        <View style={[styles.avatar, { backgroundColor: colors.accentSubtle }]}>
-          <Sparkles size={12} color={colors.accent} />
+        <View style={[styles.avatar, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }]}>
+          <Sparkles size={12} color={colors.textPrimary} strokeWidth={1.5} />
         </View>
         <Text style={[styles.senderName, { color: colors.textSecondary }]}>Orbit</Text>
         
@@ -61,13 +71,12 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         )}
       </View>
 
-      <View style={[styles.assistantBubble, { backgroundColor: colors.assistantBubble, borderColor: colors.borderSubtle }]}>
-        <Text style={[styles.assistantText, { color: colors.textPrimary }]}>
-          {content}
+      <View style={styles.assistantBubble}>
+        <Markdown content={content} color={colors.textPrimary}>
           {isStreaming && <StreamingCursor />}
-        </Text>
+        </Markdown>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -81,9 +90,7 @@ const styles = StyleSheet.create({
     maxWidth: '82%',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderBottomRightRadius: borderRadius.sm,
-    borderWidth: 1,
+    borderRadius: borderRadius.xl,
   },
   userText: {
     ...typography.body,
@@ -116,12 +123,9 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   assistantBubble: {
-    maxWidth: '92%',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderTopLeftRadius: borderRadius.sm,
-    borderWidth: 1,
+    maxWidth: '100%',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: 0,
   },
   assistantText: {
     ...typography.body,

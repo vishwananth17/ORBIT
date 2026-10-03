@@ -2,6 +2,7 @@
 // Orbit Database Client with Zero-Docker In-Memory Fallback
 // ============================================================================
 
+import * as fs from 'fs';
 import { Pool, PoolConfig, QueryResult, QueryResultRow } from 'pg';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -12,16 +13,24 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 const config: PoolConfig = {
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/orbit_db',
+  ...(process.env.PGHOST ? {
+    host: process.env.PGHOST, port: Number(process.env.PGPORT || '5432'),
+    user: process.env.PGUSER, password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE || 'postgres',
+    ssl: { rejectUnauthorized: true,
+      ...(process.env.PGSSLROOTCERT ? { ca: fs.readFileSync(process.env.PGSSLROOTCERT, 'utf8') } : {}),
+    },
+  } : { connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/orbit_db' }),
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000, // Fast 2s timeout for seamless local fallback
+  connectionTimeoutMillis: 10000, // Fast 2s timeout for seamless local fallback
 };
 
 export const rawPool = new Pool(config);
 
 let isPostgresAvailable = false;
 let hasCheckedPostgres = false;
+let connectivityProbe: Promise<boolean> | null = null;
 
 // Check connectivity on startup
 async function checkPostgresConnectivity(): Promise<boolean> {
@@ -37,14 +46,13 @@ async function checkPostgresConnectivity(): Promise<boolean> {
     return true;
   } catch (err: any) {
     isPostgresAvailable = false;
-    console.log('⚡ [Orbit Database] PostgreSQL not reachable. Running in Zero-Docker In-Memory Fallback Mode.');
-    console.log('   All agent features, personas, vector memories, and journal records are fully operational!');
+    console.warn('[Orbit Database] PostgreSQL unavailable; connection error code:', err.code || err.name || 'unknown');
     return false;
   }
 }
 
 // Initial probe
-checkPostgresConnectivity();
+connectivityProbe = checkPostgresConnectivity();
 
 rawPool.on('error', (err) => {
   if (isPostgresAvailable) {
@@ -56,9 +64,8 @@ export async function query<T extends QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {
-  if (!hasCheckedPostgres) {
-    await checkPostgresConnectivity();
-  }
+  if (connectivityProbe) await connectivityProbe;
+  else if (!hasCheckedPostgres) await checkPostgresConnectivity();
 
   if (isPostgresAvailable) {
     try {
@@ -73,20 +80,22 @@ export async function query<T extends QueryResultRow = any>(
       if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND' || err.message?.includes('Connection terminated')) {
         console.warn('⚠️  [Orbit Database] Lost connection to PostgreSQL. Falling back to in-memory store.');
         isPostgresAvailable = false;
-        return memoryDb.execute<T>(text, params);
+        throw new Error('Persistent database connection lost. Operation failed.');
       }
       throw err;
     }
   }
 
-  // Zero-docker in-memory fallback execution
+  if (process.env.DEMO_MODE !== 'true' && process.env.NODE_ENV !== 'test') {
+    throw new Error('Persistent database unavailable. Nothing was saved.');
+  }
+  // Explicit demo/test mode only
   return memoryDb.execute<T>(text, params);
 }
 
 export async function getClient() {
-  if (!hasCheckedPostgres) {
-    await checkPostgresConnectivity();
-  }
+  if (connectivityProbe) await connectivityProbe;
+  else if (!hasCheckedPostgres) await checkPostgresConnectivity();
 
   if (isPostgresAvailable) {
     try {
@@ -96,6 +105,9 @@ export async function getClient() {
     }
   }
 
+  if (process.env.DEMO_MODE !== 'true' && process.env.NODE_ENV !== 'test') {
+    throw new Error('Persistent database unavailable');
+  }
   // Mock pool client for transactions
   return {
     query: <T extends QueryResultRow = any>(text: string, params?: any[]) => memoryDb.execute<T>(text, params),

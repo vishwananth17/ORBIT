@@ -75,7 +75,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.borderSubtle }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: 'transparent' }]}>
         <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
           <TouchableOpacity
             style={[
@@ -105,9 +105,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             multiline
             maxLength={4000}
             editable={!disabled}
-            onSubmitEditing={(e) => {
-              // On desktop/web enter sends, on mobile shift+enter
-              if (Platform.OS === 'web' && !(e.nativeEvent as any).shiftKey) {
+            onKeyPress={(e: any) => {
+              // Web: Enter sends, Shift+Enter adds a new line
+              if (Platform.OS === 'web' && e.nativeEvent?.key === 'Enter' && !e.nativeEvent?.shiftKey) {
+                e.preventDefault?.();
                 handleSend();
               }
             }}
@@ -116,10 +117,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           {isStreaming ? (
             <TouchableOpacity
               onPress={onStopStreaming}
-              style={[styles.actionButton, { backgroundColor: colors.destructive }]}
+              style={[styles.actionButton, { backgroundColor: colors.accent }]}
               accessibilityLabel="Stop generating response"
             >
-              <Square size={14} color="#FFFFFF" fill="#FFFFFF" />
+              <Square size={12} color={colors.accentText} fill={colors.accentText} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -147,13 +148,14 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderTopWidth: 1,
+    borderTopWidth: 0,
+    paddingBottom: spacing.lg,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: borderRadius.xl,
+    borderRadius: 26,
     paddingHorizontal: spacing.md,
     paddingVertical: Platform.OS === 'ios' ? spacing.sm : 4,
     minHeight: 48,
@@ -168,6 +170,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     paddingTop: Platform.OS === 'ios' ? 8 : 4,
     paddingBottom: Platform.OS === 'ios' ? 8 : 4,
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : {}),
   },
   actionButton: {
     width: 32,

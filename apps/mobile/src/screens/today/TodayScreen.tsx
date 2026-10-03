@@ -17,6 +17,7 @@ import { Settings, MessageSquare, Sparkles, Moon, Sun, Mic, Bot, BookOpen } from
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuthStore } from '../../store/authStore';
 import { useTodayStore } from '../../store/todayStore';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { MorningBriefCard } from '../../components/today/MorningBriefCard';
 import { AgendaTimeline } from '../../components/today/AgendaTimeline';
 import { ProactiveNudgeCard } from '../../components/today/ProactiveNudgeCard';
@@ -124,7 +125,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               accessibilityLabel="Daily Reflection & Mood"
             >
-              <BookOpen size={18} color="#8B5CF6" />
+              <BookOpen size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
 
@@ -170,11 +171,11 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
         }
       >
         {isLoading && !activeBrief ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.accent} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Synthesizing today's intelligence...
-            </Text>
+          <View style={{ padding: 4 }}>
+            <Skeleton height={150} radius={16} style={{ marginBottom: 16 }} />
+            <Skeleton height={20} width={140} style={{ marginBottom: 12 }} />
+            <Skeleton height={64} radius={12} style={{ marginBottom: 10 }} />
+            <Skeleton height={64} radius={12} />
           </View>
         ) : (
           <>
@@ -229,13 +230,13 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
                   styles.journalCard,
                   {
                     backgroundColor: colors.surface,
-                    borderColor: '#8B5CF6' + '40',
+                    borderColor: colors.textSecondary + '40',
                   },
                 ]}
               >
                 <View style={styles.journalHeaderRow}>
                   <View style={styles.journalIconBadge}>
-                    <Text style={{ fontSize: 20 }}>🌙</Text>
+                    <Moon size={20} color={colors.textSecondary} strokeWidth={1.6} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={[styles.journalCardTitle, { color: colors.textPrimary }]}>
@@ -245,7 +246,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
                       Log today's cognitive pause, energy & receive AI reflection
                     </Text>
                   </View>
-                  <Text style={[styles.journalArrow, { color: '#8B5CF6' }]}>→</Text>
+                  <Text style={[styles.journalArrow, { color: colors.textSecondary }]}>→</Text>
                 </View>
               </TouchableOpacity>
             )}

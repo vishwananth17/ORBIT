@@ -7,6 +7,9 @@ import { spawnSync } from 'child_process';
 import path from 'path';
 
 const testSuites = [
+  { name: 'SSE CORS header propagation', file: 'sse.test.ts' },
+  { name: 'Groq provider safety and streaming', file: 'groq.test.ts' },
+  { name: 'Foundation ownership and read continuation', file: 'foundation.test.ts' },
   { name: 'Agent Core & System Prompt', file: 'agent.test.ts' },
   { name: 'Semantic Memory & Vector Embeddings', file: 'memory.test.ts' },
   { name: 'Tool Sandboxing & Cryptography', file: 'tools.test.ts' },
@@ -29,6 +32,7 @@ for (const suite of testSuites) {
   console.log(`▶ Executing: ${suite.name} (${suite.file})...`);
 
   const result = spawnSync('npx', ['tsx', filePath], {
+    env: { ...process.env, ...(suite.file === 'foundation.test.ts' ? { DEMO_MODE: 'false' } : {}) },
     shell: true,
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),

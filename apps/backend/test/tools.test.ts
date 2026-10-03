@@ -64,3 +64,18 @@ assert.strictEqual(decrypted, rawOAuthToken, 'Decrypted token must exactly match
 console.log('✔ AES-256-GCM Token Cryptography Tests Passed!');
 
 console.log('\n🎉 ALL ORBIT TOOL TESTS PASSED SUCCESSFULLY!\n');
+
+// Gmail read-only message reader
+import { extractEmailText } from '../src/integrations/google';
+assert.strictEqual(doesToolRequireConfirmation(TOOL_NAMES.READ_EMAIL), false, 'read_email is read-only');
+assert.strictEqual(TOOL_REGISTRY[TOOL_NAMES.READ_EMAIL].permission_level, 'read');
+const b64 = (t: string) => Buffer.from(t).toString('base64url');
+assert.strictEqual(
+  extractEmailText({ mimeType: 'multipart/alternative', parts: [
+    { mimeType: 'text/plain', body: { data: b64('Hello plain') } },
+    { mimeType: 'text/html', body: { data: b64('<p>Hello html</p>') } },
+    { mimeType: 'application/pdf', filename: 'a.pdf', body: { data: b64('SECRET') } } ] }),
+  'Hello plain');
+assert.strictEqual(extractEmailText({ mimeType: 'text/html', body: { data: b64('<style>x{}</style><b>Hi</b>&nbsp;there') } }), 'Hi there');
+assert.ok(extractEmailText({ mimeType: 'text/plain', body: { data: b64('a'.repeat(9000)) } }).endsWith('[truncated]'));
+console.log('✔ Gmail read_email tests passed!');

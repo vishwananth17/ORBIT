@@ -49,6 +49,7 @@ export async function checkDueReminders(): Promise<number> {
         sentCount++;
       }
 
+      if (!pushRes.sent) continue; // Keep failed deliveries pending for retry.
       await pool.query(
         `UPDATE reminders SET is_sent = TRUE, sent_at = NOW() WHERE id = $1`,
         [reminder.id]

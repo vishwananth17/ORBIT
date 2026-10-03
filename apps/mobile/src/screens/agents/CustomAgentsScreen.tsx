@@ -1,3 +1,5 @@
+import { LineIcon } from '../../components/common/LineIcon';
+import { ArrowLeft, Check, X as CloseIcon } from 'lucide-react-native';
 // ============================================================================
 // Custom Agents & Personas Screen (Phase 6)
 // ============================================================================
@@ -169,32 +171,20 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
     }
   };
 
-  const getIconEmoji = (icon: string) => {
-    switch (icon) {
-      case 'briefcase': return '💼';
-      case 'shield': return '🛡️';
-      case 'trending-up': return '📈';
-      case 'book-open': return '📖';
-      case 'zap': return '⚡';
-      case 'code': return '💻';
-      case 'feather': return '🪶';
-      default: return '🤖';
-    }
-  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-          <Text style={[styles.backText, { color: colors.textSecondary }]}>‹ Back</Text>
+          <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={1.5} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Personas & Agents</Text>
         <TouchableOpacity
           style={[styles.addBtn, { backgroundColor: colors.accent }]}
           onPress={() => openCreateModal()}
         >
-          <Text style={styles.addBtnText}>+ New</Text>
+          <Text style={[styles.addBtnText, { color: colors.accentText }]}>+ New</Text>
         </TouchableOpacity>
       </View>
 
@@ -203,7 +193,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
         <View style={[styles.activeBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.bannerLabel, { color: colors.textSecondary }]}>CURRENT ACTIVE PERSONA</Text>
           <View style={styles.activeRow}>
-            <Text style={styles.activeEmoji}>{getIconEmoji(activeAgent?.avatar_icon || 'bot')}</Text>
+            <LineIcon name={activeAgent?.avatar_icon || 'bot'} color={colors.accent} size={26} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.activeName, { color: colors.textPrimary }]}>
                 {activeAgent ? activeAgent.name : 'Orbit Default Agent'}
@@ -237,7 +227,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.iconCircle}>
-                    <Text style={styles.agentEmoji}>{getIconEmoji(agent.avatar_icon)}</Text>
+                    <LineIcon name={agent.avatar_icon} color={colors.accent} size={26} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <View style={styles.nameRow}>
@@ -284,9 +274,12 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                       if (onSelectAgentForChat) onSelectAgentForChat(agent);
                     }}
                   >
-                    <Text style={[styles.actionBtnText, { color: isActive ? '#fff' : colors.textPrimary }]}>
-                      {isActive ? '✓ Active' : 'Use in Chat'}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      {isActive ? <Check size={14} color={colors.accentText} strokeWidth={1.75} /> : null}
+                      <Text style={[styles.actionBtnText, { color: isActive ? colors.accentText : colors.textPrimary }]}>
+                        {isActive ? 'Active' : 'Use in Chat'}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
 
                   {!agent.is_default && (
@@ -303,7 +296,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.textActionBtn} onPress={() => handleDelete(agent)}>
-                    <Text style={[styles.textActionText, { color: colors.destructive }]}>Delete</Text>
+                    <Text style={[styles.textActionText, { color: colors.textSecondary }]}>Delete</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -325,7 +318,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                 style={[styles.presetCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={() => openCreateModal(preset)}
               >
-                <Text style={styles.presetEmoji}>{getIconEmoji(preset.avatar_icon)}</Text>
+                <LineIcon name={preset.avatar_icon} color={colors.accent} size={26} />
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={[styles.presetName, { color: colors.textPrimary }]}>{preset.name}</Text>
                   <Text style={[styles.presetTagline, { color: colors.textSecondary }]} numberOfLines={2}>
@@ -348,7 +341,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                 {editingAgent ? 'Edit Persona' : 'Create Custom Persona'}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
+                <CloseIcon size={20} color={colors.textSecondary} strokeWidth={1.5} />
               </TouchableOpacity>
             </View>
 
@@ -368,7 +361,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                     ]}
                     onPress={() => setAvatarIcon(icon)}
                   >
-                    <Text style={{ fontSize: 20 }}>{getIconEmoji(icon)}</Text>
+                    <LineIcon name={icon} color={colors.textPrimary} />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -436,9 +429,12 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                       onPress={() => toggleTool(tool.id)}
                     >
                       <Text style={[styles.toolToggleText, { color: colors.textPrimary }]}>{tool.label}</Text>
-                      <Text style={{ color: enabled ? colors.accent : colors.textSecondary, fontWeight: '700' }}>
-                        {enabled ? '✓ Enabled' : 'Disabled'}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        {enabled ? <Check size={14} color={colors.accent} strokeWidth={1.75} /> : null}
+                        <Text style={{ color: enabled ? colors.accent : colors.textSecondary, fontWeight: '700' }}>
+                          {enabled ? 'Enabled' : 'Disabled'}
+                        </Text>
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -461,9 +457,9 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.accentText} />
                 ) : (
-                  <Text style={styles.saveBtnText}>{editingAgent ? 'Save Changes' : 'Create Persona'}</Text>
+                  <Text style={[styles.saveBtnText, { color: colors.accentText }]}>{editingAgent ? 'Save Changes' : 'Create Persona'}</Text>
                 )}
               </TouchableOpacity>
             </ScrollView>
@@ -505,7 +501,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   addBtnText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -776,7 +771,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   saveBtnText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
