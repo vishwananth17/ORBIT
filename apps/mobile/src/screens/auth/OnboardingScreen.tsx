@@ -1,6 +1,6 @@
 import { Card } from '../../components/common/Card';
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated, Easing } from 'react-native';
 import { ShieldCheck, Brain, ArrowRight, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
@@ -26,14 +26,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       badge: 'Memory you can review',
       title: 'Keep the details.\nSee the bigger picture.',
       description:
-        'Review and edit saved preferences and project notes. Chat and memory need configured providers; they are not active in this preview.',
+        'Review and edit the notes Orbit keeps about you, and remove any of them whenever you like.',
     },
     {
       icon: Sparkles,
       badge: 'Connected, with care',
       title: 'Your inbox.\nYour day. Your call.',
       description:
-        'Google read access is ready for setup. Email sending and calendar changes remain off until the next tested rollout.',
+        'Connect Gmail for read-only access when you are ready. Sending email and calendar changes stay off.',
     },
   ];
 
@@ -46,6 +46,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   };
 
   const slide = slides[currentSlide];
+  const enter = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    enter.setValue(0);
+    Animated.timing(enter, { toValue: 1, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+  }, [currentSlide]);
   const Icon = slide.icon;
 
   return (
@@ -60,6 +65,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         </TouchableOpacity>
       </View>
 
+      <Animated.View style={{ opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }], width: '100%', alignItems: 'center' }}>
       <Card style={styles.content}>
         <View style={[styles.iconContainer, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
           <View style={[styles.iconInner, { backgroundColor: colors.accentSubtle }]}>
@@ -74,6 +80,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         <Text style={[styles.title, { color: colors.textPrimary }]}>{slide.title}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>{slide.description}</Text>
       </Card>
+      </Animated.View>
 
       <View style={styles.footer}>
         {/* Pagination Dots */}
@@ -93,6 +100,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         </View>
 
         <TouchableOpacity
+          activeOpacity={0.85}
+          accessibilityRole="button"
           onPress={handleNext}
           style={[styles.nextButton, { backgroundColor: colors.accent }]}
         >
@@ -200,6 +209,9 @@ const styles = StyleSheet.create({
   nextButton: {
     flexDirection: 'row',
     height: 54,
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
     borderRadius: borderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
