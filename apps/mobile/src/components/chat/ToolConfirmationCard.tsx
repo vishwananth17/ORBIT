@@ -34,7 +34,7 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
         return <Mail size={16} color={colors.accent} />;
       case TOOL_NAMES.CREATE_CALENDAR_EVENT:
       case TOOL_NAMES.DELETE_CALENDAR_EVENT:
-        return <Calendar size={16} color="#0EA5E9" />;
+        return <Calendar size={16} color={colors.textSecondary} />;
       case TOOL_NAMES.DELETE_MEMORY:
         return <Trash2 size={16} color={colors.destructive} />;
       default:
@@ -91,10 +91,10 @@ export const ToolConfirmationCard: React.FC<ToolConfirmationCardProps> = ({
               {
                 backgroundColor:
                   action.status === 'pending'
-                    ? 'rgba(245, 158, 11, 0.12)'
+                    ? colors.surfaceSecondary
                     : action.status === 'executed'
-                    ? 'rgba(16, 185, 129, 0.12)'
-                    : 'rgba(239, 68, 68, 0.12)',
+                    ? colors.surfaceSecondary
+                    : colors.destructiveSubtle,
               },
             ]}
           >
