@@ -147,7 +147,7 @@ export function NotificationSettingsScreen({ onBack }: NotificationSettingsScree
                     },
                   ]}
                 >
-                  <Text style={[styles.presetText, { color: selected ? '#000000' : colors.textPrimary }]}>
+                  <Text style={[styles.presetText, { color: selected ? colors.accentText : colors.textPrimary }]}>
                     {formatDisplayTime(p)}
                   </Text>
                 </TouchableOpacity>
@@ -177,7 +177,7 @@ export function NotificationSettingsScreen({ onBack }: NotificationSettingsScree
                     },
                   ]}
                 >
-                  <Text style={[styles.presetText, { color: selected ? '#000000' : colors.textPrimary }]}>
+                  <Text style={[styles.presetText, { color: selected ? colors.accentText : colors.textPrimary }]}>
                     {formatDisplayTime(p)}
                   </Text>
                 </TouchableOpacity>
@@ -189,7 +189,7 @@ export function NotificationSettingsScreen({ onBack }: NotificationSettingsScree
         {/* 2. Morning Brief Time */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
-            <Sun size={18} color="#F59E0B" style={{ marginRight: 8 }} />
+            <Sun size={18} color={colors.textSecondary} style={{ marginRight: 8 }} />
             <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Morning Brief Delivery</Text>
           </View>
           <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>
@@ -214,7 +214,7 @@ export function NotificationSettingsScreen({ onBack }: NotificationSettingsScree
                     },
                   ]}
                 >
-                  <Text style={[styles.presetText, { color: selected ? '#000000' : colors.textPrimary }]}>
+                  <Text style={[styles.presetText, { color: selected ? colors.accentText : colors.textPrimary }]}>
                     {formatDisplayTime(p)}
                   </Text>
                 </TouchableOpacity>
@@ -251,7 +251,7 @@ export function NotificationSettingsScreen({ onBack }: NotificationSettingsScree
                     },
                   ]}
                 >
-                  <Text style={[styles.presetText, { color: selected ? '#000000' : colors.textPrimary }]}>
+                  <Text style={[styles.presetText, { color: selected ? colors.accentText : colors.textPrimary }]}>
                     {formatDisplayTime(p)}
                   </Text>
                 </TouchableOpacity>
