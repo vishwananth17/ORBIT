@@ -17,6 +17,7 @@ import { Settings, MessageSquare, Sparkles, Moon, Sun, Mic, Bot, BookOpen } from
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuthStore } from '../../store/authStore';
 import { useTodayStore } from '../../store/todayStore';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { MorningBriefCard } from '../../components/today/MorningBriefCard';
 import { AgendaTimeline } from '../../components/today/AgendaTimeline';
 import { ProactiveNudgeCard } from '../../components/today/ProactiveNudgeCard';
@@ -170,11 +171,11 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
         }
       >
         {isLoading && !activeBrief ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.accent} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Synthesizing today's intelligence...
-            </Text>
+          <View style={{ padding: 4 }}>
+            <Skeleton height={150} radius={16} style={{ marginBottom: 16 }} />
+            <Skeleton height={20} width={140} style={{ marginBottom: 12 }} />
+            <Skeleton height={64} radius={12} style={{ marginBottom: 10 }} />
+            <Skeleton height={64} radius={12} />
           </View>
         ) : (
           <>
