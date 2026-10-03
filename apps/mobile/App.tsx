@@ -30,21 +30,21 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, backgroundColor: '#0B0F17', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ width: '100%', maxWidth: 420, backgroundColor: '#111827', borderColor: '#2A3447', borderWidth: 1, borderRadius: 16, padding: 24 }}>
-            <Text style={{ color: '#F8FAFC', fontSize: 20, fontWeight: '600', marginBottom: 8 }}>Something went wrong</Text>
-            <Text style={{ color: '#94A3B8', fontSize: 15, lineHeight: 22, marginBottom: 20 }}>
+        <View style={{ flex: 1, backgroundColor: '#000000', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '100%', maxWidth: 420, backgroundColor: '#0D0D0D', borderColor: '#2A2A2A', borderWidth: 1, borderRadius: 16, padding: 24 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '600', marginBottom: 8 }}>Something went wrong</Text>
+            <Text style={{ color: '#A3A3A3', fontSize: 15, lineHeight: 22, marginBottom: 20 }}>
               Orbit hit an error and stopped this screen. Your data is not affected. Try again.
             </Text>
             {__DEV__ && this.state.error?.message ? (
-              <Text style={{ color: '#64748B', fontSize: 12, marginBottom: 16 }}>{this.state.error.message}</Text>
+              <Text style={{ color: '#737373', fontSize: 12, marginBottom: 16 }}>{this.state.error.message}</Text>
             ) : null}
             <TouchableOpacity
               accessibilityRole="button"
               onPress={() => this.setState({ hasError: false, error: null, stack: null })}
-              style={{ backgroundColor: '#10B981', height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}
+              style={{ backgroundColor: '#FFFFFF', height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}
             >
-              <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 15 }}>Try again</Text>
+              <Text style={{ color: '#000000', fontWeight: '600', fontSize: 15 }}>Try again</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -185,7 +185,7 @@ const initialMetrics = {
 export default function App() {
   return (
     <ErrorBoundary>
-      <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
+      <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#000000' }}>
         <ThemeProvider>
           <View style={styles.stage}>
             <View style={styles.column}>
@@ -204,14 +204,14 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundColor: '#090D16',
+    backgroundColor: '#000000',
     alignItems: 'center',
   },
   column: {
     flex: 1,
     width: '100%',
     maxWidth: Platform.OS === 'web' ? 480 : undefined,
-    ...(Platform.OS === 'web' ? { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#1A2234' } : {}),
+    ...(Platform.OS === 'web' ? { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#1A1A1A' } : {}),
   },
   loadingContainer: {
     flex: 1,
