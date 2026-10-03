@@ -181,6 +181,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               value={biometricsEnabled}
               onValueChange={setBiometricsEnabled}
               trackColor={{ false: colors.surfaceSecondary, true: colors.accent }}
+              thumbColor={colors.background}
+              {...({ activeThumbColor: colors.background } as any)}
             />
           </View>
 
@@ -200,6 +202,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               value={hapticsEnabled}
               onValueChange={setHapticsEnabled}
               trackColor={{ false: colors.surfaceSecondary, true: colors.accent }}
+              thumbColor={colors.background}
+              {...({ activeThumbColor: colors.background } as any)}
             />
           </View>
         </View>
