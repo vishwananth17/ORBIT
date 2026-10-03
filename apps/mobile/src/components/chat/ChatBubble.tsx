@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Sparkles, Copy, Check } from 'lucide-react-native';
 import { Message } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
@@ -21,6 +21,15 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   const { colors } = useTheme();
   const [copied, setCopied] = React.useState(false);
 
+  const appear = React.useRef(new Animated.Value(0)).current;
+  React.useEffect(() => {
+    Animated.timing(appear, { toValue: 1, duration: 260, useNativeDriver: true }).start();
+  }, [appear]);
+  const enter = {
+    opacity: appear,
+    transform: [{ translateY: appear.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }],
+  };
+
   const isUser = message?.role === 'user';
   const content = isStreaming ? streamingText : message?.content || '';
 
@@ -32,19 +41,19 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   if (isUser) {
     return (
-      <View style={styles.userContainer}>
+      <Animated.View style={[styles.userContainer, enter]}>
         <View style={[styles.userBubble, { backgroundColor: colors.userBubble }]}>
           <Text style={[styles.userText, { color: colors.textPrimary }]}>
             {content}
           </Text>
         </View>
-      </View>
+      </Animated.View>
     );
   }
 
   // Assistant Bubble
   return (
-    <View style={styles.assistantContainer}>
+    <Animated.View style={[styles.assistantContainer, enter]}>
       <View style={styles.headerRow}>
         <View style={[styles.avatar, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }]}>
           <Sparkles size={12} color={colors.textPrimary} strokeWidth={1.5} />
@@ -67,7 +76,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           {isStreaming && <StreamingCursor />}
         </Markdown>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
