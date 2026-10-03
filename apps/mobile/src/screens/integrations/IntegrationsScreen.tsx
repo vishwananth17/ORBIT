@@ -84,11 +84,11 @@ export const IntegrationsScreen: React.FC<IntegrationsScreenProps> = ({ onBack }
   const getProviderIcon = (provider: string) => {
     switch (provider) {
       case 'google_calendar':
-        return <Calendar size={22} color="#0EA5E9" />;
+        return <Calendar size={22} color={colors.textSecondary} />;
       case 'gmail':
         return <Mail size={22} color={colors.accent} />;
       case 'google_drive':
-        return <HardDrive size={22} color="#F59E0B" />;
+        return <HardDrive size={22} color={colors.textSecondary} />;
       default:
         return <Calendar size={22} color={colors.accent} />;
     }
@@ -143,7 +143,7 @@ export const IntegrationsScreen: React.FC<IntegrationsScreenProps> = ({ onBack }
                         styles.badge,
                         {
                           backgroundColor: item.is_connected
-                            ? 'rgba(16, 185, 129, 0.12)'
+                            ? colors.surfaceSecondary
                             : colors.surfaceSecondary,
                         },
                       ]}
