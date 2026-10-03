@@ -6,7 +6,7 @@ const icons: Record<string, React.ComponentType<any>> = {
   zap: Zap, code: Code, feather: Feather, bot: Bot, moon: Moon, rain: CloudRain,
   scale: Scale, leaf: Leaf, rocket: Rocket,
 };
-export function LineIcon({ name, size = 22, color = '#94A3B8' }: { name: string; size?: number; color?: string }) {
+export function LineIcon({ name, size = 22, color = '#A3A3A3' }: { name: string; size?: number; color?: string }) {
   const Icon = icons[name] || Bot;
   return <Icon size={size} color={color} strokeWidth={1.6} />;
 }
