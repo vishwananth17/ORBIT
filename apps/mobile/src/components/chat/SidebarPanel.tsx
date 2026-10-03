@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TextInput, StyleSheet } from 'react-native';
 import { SquarePen, Search, X, Trash2, Sparkles } from 'lucide-react-native';
 import { Conversation } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuthStore } from '../../store/authStore';
+import { PressScale as TouchableOpacity } from '../ui/PressScale';
 import { spacing, borderRadius, typography } from '../../theme';
 
 export interface SidebarNavItem {
@@ -149,15 +150,15 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.sm, marginBottom: spacing.lg },
   brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   brandText: { ...typography.subheading },
-  iconBtn: { padding: spacing.xs },
-  newChat: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderWidth: 1, borderRadius: borderRadius.lg, paddingVertical: 10, paddingHorizontal: spacing.md, marginBottom: spacing.md },
-  newChatText: { ...typography.label, fontSize: 14 },
+  iconBtn: { padding: spacing.sm },
+  newChat: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderWidth: 1, borderRadius: borderRadius.lg, minHeight: 46, paddingVertical: 12, paddingHorizontal: spacing.md, marginBottom: spacing.md },
+  newChatText: { ...typography.label, fontSize: 15, fontWeight: '700' },
   search: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderRadius: borderRadius.lg, paddingHorizontal: spacing.md, paddingVertical: 8, marginBottom: spacing.md },
   searchInput: { flex: 1, padding: 0, fontSize: 14 },
   section: { ...typography.caption, fontWeight: '600', paddingHorizontal: spacing.sm, marginBottom: spacing.xs },
   list: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 9, paddingHorizontal: spacing.sm, borderRadius: borderRadius.md },
-  rowText: { ...typography.label, fontSize: 14, flexShrink: 1 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, paddingVertical: 10, paddingHorizontal: spacing.md, borderRadius: borderRadius.md },
+  rowText: { ...typography.label, fontSize: 15, fontWeight: '600', flexShrink: 1 },
   navLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   nav: { borderTopWidth: 1, paddingTop: spacing.sm, paddingBottom: spacing.lg, gap: 2 },
   user: { ...typography.caption, paddingHorizontal: spacing.sm, paddingTop: spacing.md },
