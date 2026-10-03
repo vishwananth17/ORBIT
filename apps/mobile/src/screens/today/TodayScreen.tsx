@@ -124,7 +124,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               accessibilityLabel="Daily Reflection & Mood"
             >
-              <BookOpen size={18} color="#8B5CF6" />
+              <BookOpen size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
 
@@ -229,7 +229,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
                   styles.journalCard,
                   {
                     backgroundColor: colors.surface,
-                    borderColor: '#8B5CF6' + '40',
+                    borderColor: colors.textSecondary + '40',
                   },
                 ]}
               >
@@ -245,7 +245,7 @@ export function TodayScreen({ onOpenChat, onOpenSettings, onOpenJournal, onOpenA
                       Log today's cognitive pause, energy & receive AI reflection
                     </Text>
                   </View>
-                  <Text style={[styles.journalArrow, { color: '#8B5CF6' }]}>→</Text>
+                  <Text style={[styles.journalArrow, { color: colors.textSecondary }]}>→</Text>
                 </View>
               </TouchableOpacity>
             )}
