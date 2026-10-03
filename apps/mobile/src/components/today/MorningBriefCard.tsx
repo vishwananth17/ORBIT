@@ -69,37 +69,6 @@ export function MorningBriefCard({
       {/* AI Synthesis Summary */}
       <Text style={[styles.summary, { color: colors.textSecondary }]}>{brief.summary}</Text>
 
-      {/* Audio Brief Player Widget */}
-      <TouchableOpacity
-        onPress={onToggleAudio}
-        activeOpacity={0.8}
-        style={[
-          styles.audioPlayer,
-          {
-            backgroundColor: isPlayingAudio ? colors.accent + '15' : colors.surfaceSecondary,
-            borderColor: isPlayingAudio ? colors.accent : colors.border,
-          },
-        ]}
-      >
-        <View style={[styles.playCircle, { backgroundColor: isPlayingAudio ? colors.accent : colors.surface }]}>
-          {isPlayingAudio ? (
-            <Pause size={14} color={isPlayingAudio ? '#000000' : colors.textPrimary} />
-          ) : (
-            <Play size={14} color={colors.textPrimary} style={{ marginLeft: 2 }} />
-          )}
-        </View>
-
-        <View style={styles.audioContent}>
-          <Text style={[styles.audioTitle, { color: colors.textPrimary }]}>
-            {isPlayingAudio ? 'Speaking Orbit Brief...' : 'Listen to Orbit Brief'}
-          </Text>
-          <Text style={[styles.audioSubtitle, { color: colors.textSecondary }]}>
-            {isPlayingAudio ? 'Audio synthesized • Tap to pause' : 'Voice recitation ~45s • Tap to play'}
-          </Text>
-        </View>
-
-        <Volume2 size={18} color={isPlayingAudio ? colors.accent : colors.textSecondary} />
-      </TouchableOpacity>
     </View>
   );
 }
