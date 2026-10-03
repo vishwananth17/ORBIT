@@ -35,8 +35,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectPrompt }) => {
   return (
     <View style={styles.container}>
       <View style={styles.heroSection}>
-        <View style={[styles.logoBadge, { backgroundColor: colors.accentSubtle }]}>
-          <Sparkles size={24} color={colors.accent} />
+        <View style={[styles.logoBadge, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }]}>
+          <Sparkles size={24} color={colors.textPrimary} strokeWidth={1.5} />
         </View>
         <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>
           Where shall we focus?
@@ -77,7 +77,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectPrompt }) => {
       <View style={styles.privacyBadgeRow}>
         <ShieldCheck size={12} color={colors.textTertiary} />
         <Text style={[styles.privacyBadgeText, { color: colors.textTertiary }]}>
-          End-to-end encrypted storage with pgvector RLS isolation
+          Your data stays in your own account. Nothing is sent without your approval.
         </Text>
       </View>
     </View>
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     ...typography.body,
     fontSize: 14,
-    color: '#94A3B8',
+    color: '#A3A3A3',
     textAlign: 'center',
     lineHeight: 20,
     maxWidth: 320,
