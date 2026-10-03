@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Component, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
@@ -30,21 +30,23 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, backgroundColor: '#0B0F19', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#00F0FF', fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>Orbit UI Recovered</Text>
-          <Text style={{ color: '#EF4444', fontSize: 14, textAlign: 'center', marginBottom: 12, fontWeight: '600' }}>
-            {this.state.error?.message}
-          </Text>
-          {this.state.stack ? (
-            <View style={{ backgroundColor: '#131A2B', padding: 12, borderRadius: 8, maxWidth: '90%', marginBottom: 16 }}>
-              <Text style={{ color: '#94A3B8', fontSize: 11, fontFamily: 'monospace' }}>
-                {this.state.stack}
-              </Text>
-            </View>
-          ) : null}
-          <TouchableOpacity onPress={() => this.setState({ hasError: false, error: null, stack: null })} style={{ backgroundColor: '#00F0FF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 }}>
-            <Text style={{ color: '#0B0F19', fontWeight: 'bold' }}>Reload Interface</Text>
-          </TouchableOpacity>
+        <View style={{ flex: 1, backgroundColor: '#0B0F17', padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '100%', maxWidth: 420, backgroundColor: '#111827', borderColor: '#2A3447', borderWidth: 1, borderRadius: 16, padding: 24 }}>
+            <Text style={{ color: '#F8FAFC', fontSize: 20, fontWeight: '600', marginBottom: 8 }}>Something went wrong</Text>
+            <Text style={{ color: '#94A3B8', fontSize: 15, lineHeight: 22, marginBottom: 20 }}>
+              Orbit hit an error and stopped this screen. Your data is not affected. Try again.
+            </Text>
+            {__DEV__ && this.state.error?.message ? (
+              <Text style={{ color: '#64748B', fontSize: 12, marginBottom: 16 }}>{this.state.error.message}</Text>
+            ) : null}
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => this.setState({ hasError: false, error: null, stack: null })}
+              style={{ backgroundColor: '#10B981', height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 15 }}>Try again</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       );
     }
@@ -185,8 +187,10 @@ export default function App() {
     <ErrorBoundary>
       <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
         <ThemeProvider>
-          <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#090D16' }}>
-            <MainAppNavigator />
+          <View style={styles.stage}>
+            <View style={styles.column}>
+              <MainAppNavigator />
+            </View>
           </View>
         </ThemeProvider>
       </SafeAreaProvider>
@@ -195,6 +199,20 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  // On wide web screens the app renders as a centered phone-width column instead of stretching edge to edge.
+  stage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#090D16',
+    alignItems: 'center',
+  },
+  column: {
+    flex: 1,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 480 : undefined,
+    ...(Platform.OS === 'web' ? { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#1A2234' } : {}),
+  },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
