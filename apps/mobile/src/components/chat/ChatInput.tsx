@@ -105,9 +105,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             multiline
             maxLength={4000}
             editable={!disabled}
-            onSubmitEditing={(e) => {
-              // On desktop/web enter sends, on mobile shift+enter
-              if (Platform.OS === 'web' && !(e.nativeEvent as any).shiftKey) {
+            onKeyPress={(e: any) => {
+              // Web: Enter sends, Shift+Enter adds a new line
+              if (Platform.OS === 'web' && e.nativeEvent?.key === 'Enter' && !e.nativeEvent?.shiftKey) {
+                e.preventDefault?.();
                 handleSend();
               }
             }}
@@ -169,6 +170,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     paddingTop: Platform.OS === 'ios' ? 8 : 4,
     paddingBottom: Platform.OS === 'ios' ? 8 : 4,
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : {}),
   },
   actionButton: {
     width: 32,
