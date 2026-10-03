@@ -32,9 +32,9 @@ export function AgendaTimeline({ items, onToggleTask }: AgendaTimelineProps) {
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
       case 'urgent':
-        return '#EF4444';
+        return colors.destructive;
       case 'high':
-        return '#F59E0B';
+        return colors.textSecondary;
       case 'medium':
         return colors.accent;
       default:
@@ -64,7 +64,7 @@ export function AgendaTimeline({ items, onToggleTask }: AgendaTimelineProps) {
                 ]}
               >
                 {isCompleted ? (
-                  <CheckCircle2 size={12} color="#000000" />
+                  <CheckCircle2 size={12} color={colors.accentText} />
                 ) : (
                   <View style={[styles.innerDot, { backgroundColor: priorityColor }]} />
                 )}
@@ -105,7 +105,7 @@ export function AgendaTimeline({ items, onToggleTask }: AgendaTimelineProps) {
                     <Text
                       style={[
                         styles.typeText,
-                        { color: isTask ? colors.accent : '#3B82F6' },
+                        { color: isTask ? colors.accent : colors.textSecondary },
                       ]}
                     >
                       {isTask ? 'TASK' : 'EVENT'}
