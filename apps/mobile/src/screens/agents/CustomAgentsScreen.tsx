@@ -1,5 +1,5 @@
 import { LineIcon } from '../../components/common/LineIcon';
-import { Check, X as CloseIcon } from 'lucide-react-native';
+import { ArrowLeft, Check, X as CloseIcon } from 'lucide-react-native';
 // ============================================================================
 // Custom Agents & Personas Screen (Phase 6)
 // ============================================================================
@@ -177,7 +177,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-          <Text style={[styles.backText, { color: colors.textSecondary }]}>‹ Back</Text>
+          <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={1.5} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Personas & Agents</Text>
         <TouchableOpacity
@@ -296,7 +296,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.textActionBtn} onPress={() => handleDelete(agent)}>
-                    <Text style={[styles.textActionText, { color: colors.destructive }]}>Delete</Text>
+                    <Text style={[styles.textActionText, { color: colors.textSecondary }]}>Delete</Text>
                   </TouchableOpacity>
                 </View>
               </View>
