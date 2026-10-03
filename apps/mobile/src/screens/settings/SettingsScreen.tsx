@@ -118,10 +118,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </View>
           <View style={styles.profileInfo}>
             <Text style={[styles.profileName, { color: colors.textPrimary }]}>
-              {user?.full_name || 'Orbit User'}
+              {user?.full_name || user?.email?.split('@')[0] || 'Signed in'}
             </Text>
             <Text style={[styles.profileEmail, { color: colors.textSecondary }]}>
-              {user?.email || 'user@orbit.ai'}
+              {user?.email || ''}
             </Text>
           </View>
         </View>
