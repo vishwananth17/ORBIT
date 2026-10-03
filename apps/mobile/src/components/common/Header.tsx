@@ -72,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
             style={[styles.iconButton, { backgroundColor: colors.surface }]}
             accessibilityLabel="Open Today's Brief"
           >
-            <Sun size={18} color="#F59E0B" />
+            <Sun size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
 
