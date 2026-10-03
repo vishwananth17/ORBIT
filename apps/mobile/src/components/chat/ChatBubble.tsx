@@ -5,6 +5,7 @@ import { Message } from '@orbit/shared';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, typography } from '../../theme';
 import { StreamingCursor } from './StreamingCursor';
+import { Markdown } from './Markdown';
 
 interface ChatBubbleProps {
   message?: Message;
@@ -62,10 +63,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       </View>
 
       <View style={styles.assistantBubble}>
-        <Text style={[styles.assistantText, { color: colors.textPrimary }]}>
-          {content}
+        <Markdown content={content} color={colors.textPrimary}>
           {isStreaming && <StreamingCursor />}
-        </Text>
+        </Markdown>
       </View>
     </View>
   );
