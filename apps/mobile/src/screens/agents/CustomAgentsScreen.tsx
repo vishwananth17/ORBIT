@@ -184,7 +184,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
           style={[styles.addBtn, { backgroundColor: colors.accent }]}
           onPress={() => openCreateModal()}
         >
-          <Text style={styles.addBtnText}>+ New</Text>
+          <Text style={[styles.addBtnText, { color: colors.accentText }]}>+ New</Text>
         </TouchableOpacity>
       </View>
 
@@ -275,8 +275,8 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                     }}
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      {isActive ? <Check size={14} color="#fff" strokeWidth={1.75} /> : null}
-                      <Text style={[styles.actionBtnText, { color: isActive ? '#fff' : colors.textPrimary }]}>
+                      {isActive ? <Check size={14} color={colors.accentText} strokeWidth={1.75} /> : null}
+                      <Text style={[styles.actionBtnText, { color: isActive ? colors.accentText : colors.textPrimary }]}>
                         {isActive ? 'Active' : 'Use in Chat'}
                       </Text>
                     </View>
@@ -457,9 +457,9 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.accentText} />
                 ) : (
-                  <Text style={styles.saveBtnText}>{editingAgent ? 'Save Changes' : 'Create Persona'}</Text>
+                  <Text style={[styles.saveBtnText, { color: colors.accentText }]}>{editingAgent ? 'Save Changes' : 'Create Persona'}</Text>
                 )}
               </TouchableOpacity>
             </ScrollView>
@@ -501,7 +501,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   addBtnText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -772,7 +771,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   saveBtnText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
