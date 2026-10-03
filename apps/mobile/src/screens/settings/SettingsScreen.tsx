@@ -249,7 +249,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderSubtle }]}>
               <TouchableOpacity onPress={onOpenJournal} style={styles.rowItem}>
                 <View style={styles.rowLabelGroup}>
-                  <BookOpen size={18} color="#8B5CF6" />
+                  <BookOpen size={18} color={colors.textSecondary} />
                   <View>
                     <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>Mindful Reflection & Mood</Text>
                     <Text style={[styles.rowDescription, { color: colors.textSecondary }]}>
