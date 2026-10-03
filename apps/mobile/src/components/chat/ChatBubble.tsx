@@ -32,7 +32,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   if (isUser) {
     return (
       <View style={styles.userContainer}>
-        <View style={[styles.userBubble, { backgroundColor: colors.userBubble, borderColor: colors.borderSubtle }]}>
+        <View style={[styles.userBubble, { backgroundColor: colors.userBubble }]}>
           <Text style={[styles.userText, { color: colors.textPrimary }]}>
             {content}
           </Text>
@@ -45,8 +45,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   return (
     <View style={styles.assistantContainer}>
       <View style={styles.headerRow}>
-        <View style={[styles.avatar, { backgroundColor: colors.accentSubtle }]}>
-          <Sparkles size={12} color={colors.accent} />
+        <View style={[styles.avatar, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }]}>
+          <Sparkles size={12} color={colors.textPrimary} strokeWidth={1.5} />
         </View>
         <Text style={[styles.senderName, { color: colors.textSecondary }]}>Orbit</Text>
         
@@ -61,7 +61,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         )}
       </View>
 
-      <View style={[styles.assistantBubble, { backgroundColor: colors.assistantBubble, borderColor: colors.borderSubtle }]}>
+      <View style={styles.assistantBubble}>
         <Text style={[styles.assistantText, { color: colors.textPrimary }]}>
           {content}
           {isStreaming && <StreamingCursor />}
@@ -81,9 +81,7 @@ const styles = StyleSheet.create({
     maxWidth: '82%',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderBottomRightRadius: borderRadius.sm,
-    borderWidth: 1,
+    borderRadius: borderRadius.xl,
   },
   userText: {
     ...typography.body,
@@ -116,12 +114,9 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   assistantBubble: {
-    maxWidth: '92%',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderTopLeftRadius: borderRadius.sm,
-    borderWidth: 1,
+    maxWidth: '100%',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: 0,
   },
   assistantText: {
     ...typography.body,
