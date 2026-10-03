@@ -133,9 +133,9 @@ export function QuickCaptureModal({ visible, onClose, onSuccess }: QuickCaptureM
       case 'memory':
         return <Brain size={18} color={colors.accent} />;
       case 'calendar_event':
-        return <Calendar size={18} color="#3B82F6" />;
+        return <Calendar size={18} color={colors.textSecondary} />;
       case 'task':
-        return <CheckSquare size={18} color="#F59E0B" />;
+        return <CheckSquare size={18} color={colors.textSecondary} />;
       default:
         return <FileText size={18} color={colors.textSecondary} />;
     }
@@ -312,13 +312,13 @@ export function QuickCaptureModal({ visible, onClose, onSuccess }: QuickCaptureM
                     ]}
                   >
                     {isProcessing ? (
-                      <ActivityIndicator size="small" color="#000000" />
+                      <ActivityIndicator size="small" color={colors.accentText} />
                     ) : (
                       <>
-                        <Text style={[styles.submitText, { color: textInput.trim() ? '#000000' : colors.textSecondary }]}>
+                        <Text style={[styles.submitText, { color: textInput.trim() ? colors.accentText : colors.textSecondary }]}>
                           Classify & Save
                         </Text>
-                        <ArrowRight size={16} color={textInput.trim() ? '#000000' : colors.textSecondary} style={{ marginLeft: 4 }} />
+                        <ArrowRight size={16} color={textInput.trim() ? colors.accentText : colors.textSecondary} style={{ marginLeft: 4 }} />
                       </>
                     )}
                   </TouchableOpacity>
@@ -498,6 +498,6 @@ const styles = StyleSheet.create({
   actionBtnPrimaryText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#000000',
+    color: "#000000",
   },
 });
