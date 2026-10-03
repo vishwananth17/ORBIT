@@ -1,6 +1,9 @@
 import React, { useEffect, useState, Component, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import { useWindowDimensions, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { Sun, Brain, Bot, BookOpen, Settings } from 'lucide-react-native';
+import { useChatStore } from './src/store/chatStore';
+import { SidebarPanel, SidebarNavItem } from './src/components/chat/SidebarPanel';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { useAuthStore } from './src/store/authStore';
@@ -58,9 +61,12 @@ type AppScreen = 'today' | 'chat' | 'memory' | 'settings' | 'integrations' | 'no
 
 function MainAppNavigator() {
   const { colors, isDark } = useTheme();
+  const { width } = useWindowDimensions();
+  const wide = Platform.OS === 'web' && width >= 900;
+  const chat = useChatStore();
   const { isAuthenticated, isBiometricLocked, isLoading, initialize } = useAuthStore();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('today');
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('chat');
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
 
   useEffect(() => {
@@ -107,6 +113,13 @@ function MainAppNavigator() {
   }
 
   // 3. Authenticated App Flow
+  const navItems: SidebarNavItem[] = [
+    { key: 'today', label: 'Today', icon: Sun, onPress: () => setCurrentScreen('today'), active: currentScreen === 'today' },
+    { key: 'memory', label: 'Memory', icon: Brain, onPress: () => setCurrentScreen('memory'), active: currentScreen === 'memory' },
+    { key: 'agents', label: 'Agents', icon: Bot, onPress: () => setCurrentScreen('agents'), active: currentScreen === 'agents' },
+    { key: 'journal', label: 'Journal', icon: BookOpen, onPress: () => setCurrentScreen('journal'), active: currentScreen === 'journal' },
+    { key: 'settings', label: 'Settings', icon: Settings, onPress: () => setCurrentScreen('settings'), active: currentScreen === 'settings' || currentScreen === 'integrations' || currentScreen === 'notifications' },
+  ];
   const renderScreen = () => {
     switch (currentScreen) {
       case 'today':
@@ -163,6 +176,8 @@ function MainAppNavigator() {
             onOpenToday={() => setCurrentScreen('today')}
             onOpenAgents={() => setCurrentScreen('agents')}
             initialPrompt={initialChatPrompt}
+            navItems={navItems}
+            embedded={wide}
           />
         );
     }
@@ -172,7 +187,31 @@ function MainAppNavigator() {
     <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: colors.background }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <OfflineSyncBanner />
-      {renderScreen()}
+      {wide ? (
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <View style={{ width: 272 }}>
+            <SidebarPanel
+              conversations={chat.conversations}
+              activeConversationId={chat.activeConversationId}
+              onSelectConversation={(id) => {
+                chat.selectConversation(id);
+                setCurrentScreen('chat');
+              }}
+              onNewChat={() => {
+                chat.newChat();
+                setCurrentScreen('chat');
+              }}
+              onDeleteConversation={(id) => chat.deleteConversation(id)}
+              navItems={navItems}
+            />
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <View style={{ flex: 1, width: '100%', maxWidth: 820 }}>{renderScreen()}</View>
+          </View>
+        </View>
+      ) : (
+        renderScreen()
+      )}
     </View>
   );
 }
@@ -183,12 +222,15 @@ const initialMetrics = {
 };
 
 export default function App() {
+  const { width } = useWindowDimensions();
+  const authed = useAuthStore((st) => st.isAuthenticated);
+  const fullWidth = Platform.OS === 'web' && width >= 900 && authed;
   return (
     <ErrorBoundary>
       <SafeAreaProvider initialMetrics={initialMetrics} style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#000000' }}>
         <ThemeProvider>
           <View style={styles.stage}>
-            <View style={styles.column}>
+            <View style={[styles.column, fullWidth && { maxWidth: undefined, borderLeftWidth: 0, borderRightWidth: 0 }]}>
               <MainAppNavigator />
             </View>
           </View>
