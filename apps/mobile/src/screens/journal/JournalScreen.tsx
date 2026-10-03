@@ -1,5 +1,5 @@
 import { LineIcon } from '../../components/common/LineIcon';
-import { X, Sparkles } from 'lucide-react-native';
+import { X, Sparkles, Check, Star } from 'lucide-react-native';
 // ============================================================================
 // Daily Journal & Insights Analytics Screen (Phase 7)
 // ============================================================================
@@ -214,7 +214,10 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
               </View>
 
               <View style={[styles.matrixCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[styles.matrixLabel, { color: colors.textSecondary }]}>PRODUCTIVITY (⭐)</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={[styles.matrixLabel, { color: colors.textSecondary }]}>PRODUCTIVITY</Text>
+                  <Star size={12} color={colors.textSecondary} strokeWidth={1.5} />
+                </View>
                 <View style={styles.ratingRow}>
                   {[1, 2, 3, 4, 5].map((lvl) => (
                     <TouchableOpacity
@@ -251,9 +254,10 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                     ]}
                     onPress={() => toggleTag(tag)}
                   >
-                    <Text style={[styles.tagChipText, { color: active ? colors.accent : colors.textSecondary }]}>
-                      {active ? `✓ ${tag}` : tag}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      {active ? <Check size={13} color={colors.accent} strokeWidth={1.75} /> : null}
+                      <Text style={[styles.tagChipText, { color: active ? colors.accent : colors.textSecondary }]}>{tag}</Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
