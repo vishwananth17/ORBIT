@@ -202,12 +202,12 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                       style={[
                         styles.ratingCircle,
                         {
-                          backgroundColor: energyLevel >= lvl ? '#F59E0B' : colors.border,
+                          backgroundColor: energyLevel >= lvl ? colors.textSecondary : colors.border,
                         },
                       ]}
                       onPress={() => setEnergyLevel(lvl)}
                     >
-                      <Text style={styles.ratingText}>{lvl}</Text>
+                      <Text style={[styles.ratingText, { color: colors.accentText }]}>{lvl}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -230,7 +230,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                       ]}
                       onPress={() => setProductivityScore(lvl)}
                     >
-                      <Text style={styles.ratingText}>{lvl}</Text>
+                      <Text style={[styles.ratingText, { color: colors.accentText }]}>{lvl}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -296,7 +296,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                 style={[styles.addTakeawayBtn, { backgroundColor: colors.accent }]}
                 onPress={addTakeaway}
               >
-                <Text style={styles.addTakeawayText}>Add</Text>
+                <Text style={[styles.addTakeawayText, { color: colors.accentText }]}>Add</Text>
               </TouchableOpacity>
             </View>
 
@@ -317,9 +317,9 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
               disabled={isSaving}
             >
               {isSaving ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.accentText} />
               ) : (
-                <Text style={styles.saveBtnText}>Save & Reflect with Orbit AI</Text>
+                <Text style={[styles.saveBtnText, { color: colors.accentText }]}>Save & Reflect with Orbit AI</Text>
               )}
             </TouchableOpacity>
 
@@ -377,7 +377,7 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                   <Text
                     style={[
                       styles.periodText,
-                      { color: selectedDays === d ? '#fff' : colors.textSecondary },
+                      { color: selectedDays === d ? colors.accentText : colors.textSecondary },
                     ]}
                   >
                     Last {d} Days
@@ -400,14 +400,14 @@ export function JournalScreen({ onBack, onOpenChatWithReflection }: Props) {
                   </View>
 
                   <View style={[styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Text style={[styles.metricVal, { color: '#F59E0B' }]}>
+                    <Text style={[styles.metricVal, { color: colors.textSecondary }]}>
                       {analytics.average_energy ? `${analytics.average_energy} / 5` : '—'}
                     </Text>
                     <Text style={[styles.metricTitle, { color: colors.textSecondary }]}>Average Energy</Text>
                   </View>
 
                   <View style={[styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Text style={[styles.metricVal, { color: '#10B981' }]}>
+                    <Text style={[styles.metricVal, { color: colors.textPrimary }]}>
                       {analytics.average_productivity ? `${analytics.average_productivity} / 5` : '—'}
                     </Text>
                     <Text style={[styles.metricTitle, { color: colors.textSecondary }]}>Productivity</Text>
@@ -572,7 +572,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   ratingText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -619,7 +618,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addTakeawayText: {
-    color: '#fff',
     fontWeight: '700',
     fontSize: 13,
   },
@@ -649,7 +647,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   saveBtnText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '700',
   },
