@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...typography.body,
-    color: '#94A3B8',
+    color: '#A3A3A3',
     textAlign: 'center',
   },
   errorCard: {
