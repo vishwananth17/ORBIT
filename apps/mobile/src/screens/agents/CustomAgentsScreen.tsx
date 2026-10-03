@@ -1,4 +1,5 @@
 import { LineIcon } from '../../components/common/LineIcon';
+import { Check, X as CloseIcon } from 'lucide-react-native';
 // ============================================================================
 // Custom Agents & Personas Screen (Phase 6)
 // ============================================================================
@@ -273,9 +274,12 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                       if (onSelectAgentForChat) onSelectAgentForChat(agent);
                     }}
                   >
-                    <Text style={[styles.actionBtnText, { color: isActive ? '#fff' : colors.textPrimary }]}>
-                      {isActive ? '✓ Active' : 'Use in Chat'}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      {isActive ? <Check size={14} color="#fff" strokeWidth={1.75} /> : null}
+                      <Text style={[styles.actionBtnText, { color: isActive ? '#fff' : colors.textPrimary }]}>
+                        {isActive ? 'Active' : 'Use in Chat'}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
 
                   {!agent.is_default && (
@@ -337,7 +341,7 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                 {editingAgent ? 'Edit Persona' : 'Create Custom Persona'}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
+                <CloseIcon size={20} color={colors.textSecondary} strokeWidth={1.5} />
               </TouchableOpacity>
             </View>
 
@@ -425,9 +429,12 @@ export function CustomAgentsScreen({ onBack, onSelectAgentForChat }: Props) {
                       onPress={() => toggleTool(tool.id)}
                     >
                       <Text style={[styles.toolToggleText, { color: colors.textPrimary }]}>{tool.label}</Text>
-                      <Text style={{ color: enabled ? colors.accent : colors.textSecondary, fontWeight: '700' }}>
-                        {enabled ? '✓ Enabled' : 'Disabled'}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        {enabled ? <Check size={14} color={colors.accent} strokeWidth={1.75} /> : null}
+                        <Text style={{ color: enabled ? colors.accent : colors.textSecondary, fontWeight: '700' }}>
+                          {enabled ? 'Enabled' : 'Disabled'}
+                        </Text>
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
